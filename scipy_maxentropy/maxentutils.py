@@ -14,13 +14,8 @@ License: BSD-style (see LICENSE.txt in main source directory)
 
 """
 
-# Future imports must come before any code in 2.5
-from __future__ import division
-from __future__ import print_function
-
-from builtins import range
 __author__ = "Ed Schofield"
-__version__ = '2.0'
+__version__ = '0.4.0'
 
 import random
 import math
@@ -28,7 +23,7 @@ import cmath
 import numpy
 from numpy import log, exp, asarray, ndarray, empty
 from scipy import sparse
-from scipy.misc import logsumexp
+from scipy.special import logsumexp
 
 
 def _logsumexpcomplex(values):

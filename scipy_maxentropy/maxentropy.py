@@ -1,3 +1,10 @@
+"""
+This module contains the former scipy.maxentropy code.
+
+Scipy.maxentropy was in turn an adaptation of "ftwmaxent" by Ed Schofield,
+first posted on SourceForge as part of the "textmodeller" project in 2002.
+"""
+
 # maxentropy.py: Routines for fitting maximum entropy models.
 
 # Copyright: Ed Schofield, 2003-2006
@@ -5,74 +12,9 @@
 
 # Future imports must come before any code in 2.5
 from __future__ import division
-from __future__ import print_function
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import range
-from builtins import object
 __author__ = "Ed Schofield"
-__version__ = '2.1'
-__changelog__ = """
-This module is an adaptation of "ftwmaxent" by Ed Schofield, first posted
-on SourceForge as part of the "textmodeller" project in 2002.  The
-official repository is now SciPy (since Nov 2005); the SourceForge
-ftwmaxent code will not be developed further.
-
-------------
-
-Change log:
-
-Since 2.0:
-* Code simplification.  Removed dualapprox(), gradapprox() and other
-  alias methods for bigmodel objects.  Use dual(), grad() etc. instead.
-* Added support for testing on an external sample during optimization.
-* Removed incomplete support for the (slow) GIS algorithm
-
-Since 2.0-alpha4:
-* Name change maxent -> maxentropy
-* Removed online (sequential) estimation of feature expectations and
-  variances.
-
-Since v2.0-alpha3:
-(1) Name change ftwmaxent -> scipy/maxent
-(2) Modification for inclusion in scipy tree.  Broke one big class into
-    two smaller classes, one for small models, the other for large models.
-    Here a 'small' model is one defined on a sample space small enough to sum
-    over in practice, whereas a 'large' model is on a sample space that is
-    high-dimensional and continuous or discrete but too large to sum over,
-    and requires Monte Carlo simulation.
-(3) Refactoring:
-    self.Eapprox -> self.mu
-    p_0 -> aux_dist
-    p0 -> aux_dist
-    p_dot -> aux_dist_dot
-    qdot -> p_dot
-    q_dot -> p_dot
-    q_theta -> p_theta
-    E_p -> E_p_tilde
-    E_q -> E_p
-
-Since v2.0-alpha2:
-Using multiple static feature matrices is now supported.  The generator
-function supplied to generate feature matrices is called matrixtrials'
-times each iteration.  This is useful for variance estimation of the E
-and log Z estimators across the trials, without drawing another sample
-each iteration (when staticsample = True).
-
-Since v2.0-alpha1:
-Sample feature matrices, if used, are sampled on the fly with a supplied
-generator function, optionally multiple times to estimate the sample
-variance of the feature expectation estimates.  An alternative is the
-online estimation alg.
-
-Since v0.8.5:
-Added code for online (sequential) estimation of feature expectations and
-variances.
-
-
-"""
+__version__ = '0.4.0'
 
 
 import math, types, pickle
@@ -80,8 +22,8 @@ import numpy as np
 from numpy import exp, asarray
 from scipy import optimize
 from scipy.linalg import norm
-from scipy.misc import logsumexp
-from scipy.maxentropy.maxentutils import arrayexp, \
+from scipy.special import logsumexp
+from .maxentutils import arrayexp, \
         innerprod, innerprodtranspose, columnmeans, columnvariances, \
         flatten, DivergenceError, sparsefeaturematrix
 
