@@ -1,11 +1,8 @@
-from __future__ import print_function
-# Test for conditional models
-# Ed Schofield, 2006
-
-from builtins import str
-from builtins import range
+"""
+Example of conditional maxentropy models
+"""
 from numpy import *
-from scipy.maxentropy import *
+from scipy_maxentropy import *
 
 # Two contexts W, four labels x
 # E_p f_0(W, X) = 0.4

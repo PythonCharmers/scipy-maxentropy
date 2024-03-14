@@ -15,12 +15,9 @@
     This code finds the probability distribution with maximal entropy
     subject to these constraints.
 """
-from __future__ import print_function
 
-from builtins import str
-__author__ =  'Ed Schofield'
-
-from scipy import maxentropy, sparse
+import scipy.sparse as sparse
+import scipy_maxentropy as maxentropy
 
 samplespace = ['dans', 'en', 'à', 'au cours de', 'pendant']
 # Occurrences of French words, and their 'next English word' contexts, in

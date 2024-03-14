@@ -16,14 +16,7 @@
     This code finds the probability distribution with maximal entropy
     subject to these constraints.
 """
-from __future__ import print_function
-
-from builtins import str
-from builtins import range
-__author__ =  'Ed Schofield'
-__version__=  '2.1'
-
-from scipy import maxentropy
+import scipy_maxentropy as maxentropy
 
 a_grave = u'\u00e0'
 

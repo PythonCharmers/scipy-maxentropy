@@ -30,8 +30,8 @@ __version__ =  '2.1'
 
 
 import sys
-from scipy import maxentropy
-from scipy.sandbox import montecarlo
+import scipy_maxentropy as maxentropy
+# from scipy.sandbox import montecarlo
 
 try:
     algorithm = sys.argv[1]
