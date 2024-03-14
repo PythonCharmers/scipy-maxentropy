@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "scipy-maxentropy"
+version = "0.4.0"
+description = "Maximum entropy modelling code previously available as scipy.maxentropy"
+authors = ["Ed Schofield <ed@pythoncharmers.com>"]
+license = "BSD"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+scipy = "^1.12.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
