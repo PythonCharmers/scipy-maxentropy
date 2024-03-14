@@ -5,7 +5,13 @@
 
 # Future imports must come before any code in 2.5
 from __future__ import division
+from __future__ import print_function
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
 __author__ = "Ed Schofield"
 __version__ = '2.1'
 __changelog__ = """
@@ -69,7 +75,7 @@ variances.
 """
 
 
-import math, types, cPickle
+import math, types, pickle
 import numpy as np
 from numpy import exp, asarray
 from scipy import optimize
@@ -239,8 +245,8 @@ class basemodel(object):
             (newparams, fopt, d) = retval
             warnflag, func_calls = d['warnflag'], d['funcalls']
             if self.verbose:
-                print algorithm + " optimization terminated successfully."
-                print "\tFunction calls: " + str(func_calls)
+                print(algorithm + " optimization terminated successfully.")
+                print("\tFunction calls: " + str(func_calls))
                 # We don't have info on how many gradient calls the LBFGSB
                 # algorithm makes
 
@@ -320,7 +326,7 @@ class basemodel(object):
 
         if self.external is None and not self.callingback:
             if self.verbose:
-                print "Function eval #", self.fnevals
+                print("Function eval #", self.fnevals)
 
         if params is not None:
             self.setparams(params)
@@ -329,7 +335,7 @@ class basemodel(object):
         L = self.lognormconst() - np.dot(self.params, self.K)
 
         if self.verbose and self.external is None:
-            print "  dual is ", L
+            print("  dual is ", L)
 
         # Use a Gaussian prior for smoothing if requested.
         # This adds the penalty term \sum_{i=1}^m \params_i^2 / {2 \sigma_i^2}.
@@ -341,7 +347,7 @@ class basemodel(object):
 
             L += 0.5 * ratios.sum()
             if self.verbose and self.external is None:
-                print "  regularized dual is ", L
+                print("  regularized dual is ", L)
 
         if not self.callingback and self.external is None:
             if hasattr(self, 'callback_dual') \
@@ -373,7 +379,7 @@ class basemodel(object):
 
         if self.external is None and not self.callingback:
             if self.verbose:
-                print "Iteration #", self.iters
+                print("Iteration #", self.iters)
 
         # Store new dual and/or gradient norm
         if not self.callingback:
@@ -395,7 +401,7 @@ class basemodel(object):
         if hasattr(self, 'testevery') and self.testevery > 0:
             if (self.iters + 1) % self.testevery != 0:
                 if self.verbose:
-                    print "Skipping test on external sample(s) ..."
+                    print("Skipping test on external sample(s) ...")
             else:
                 self.test()
 
@@ -413,7 +419,7 @@ class basemodel(object):
         """
 
         if self.verbose and self.external is None and not self.callingback:
-            print "Grad eval #" + str(self.gradevals)
+            print("Grad eval #" + str(self.gradevals))
 
         if params is not None:
             self.setparams(params)
@@ -421,7 +427,7 @@ class basemodel(object):
         G = self.expectations() - self.K
 
         if self.verbose and self.external is None:
-            print "  norm of gradient =",  norm(G)
+            print("  norm of gradient =",  norm(G))
 
         # (We don't reset params to its prior value.)
 
@@ -436,7 +442,7 @@ class basemodel(object):
             G[features_to_kill] = 0.0
             if self.verbose and self.external is None:
                 normG = norm(G)
-                print "  norm of regularized gradient =", normG
+                print("  norm of regularized gradient =", normG)
 
         if not self.callingback and self.external is None:
             if hasattr(self, 'callback_grad') \
@@ -603,15 +609,15 @@ class basemodel(object):
             raise FloatingPointError("some of the parameters are NaN")
 
         if self.verbose:
-            print "Saving parameters ..."
+            print("Saving parameters ...")
         paramsfile = open(self.paramslogfilename + '.' + \
                           str(self.paramslogcounter) + '.pickle', 'wb')
-        cPickle.dump(self.params, paramsfile, cPickle.HIGHEST_PROTOCOL)
+        pickle.dump(self.params, paramsfile, pickle.HIGHEST_PROTOCOL)
         paramsfile.close()
         #self.paramslog += 1
         #self.paramslogcounter = 0
         if self.verbose:
-            print "Done."
+            print("Done.")
 
     def beginlogging(self, filename, freq=10):
         """Enable logging params for each fn evaluation to files named
@@ -619,7 +625,7 @@ class basemodel(object):
         'freq' iterations.
         """
         if self.verbose:
-            print "Logging to files " + filename + "*"
+            print("Logging to files " + filename + "*")
         self.paramslogcounter = 0
         self.paramslogfilename = filename
         self.paramslogfreq = freq
@@ -903,7 +909,7 @@ class conditionalmodel(model):
         # it is only used by this function.
 
         self.p_tilde_context = np.empty(numcontexts, float)
-        for w in xrange(numcontexts):
+        for w in range(numcontexts):
             self.p_tilde_context[w] = self.p_tilde[0, w*S : (w+1)*S].sum()
 
         # Now compute the vector K = (K_i) of expectations of the
@@ -942,7 +948,7 @@ class conditionalmodel(model):
             log_p_dot += self.priorlogprobs
 
         self.logZ = np.zeros(numcontexts, float)
-        for w in xrange(numcontexts):
+        for w in range(numcontexts):
             self.logZ[w] = logsumexp(log_p_dot[w*S: (w+1)*S])
         return self.logZ
 
@@ -974,7 +980,7 @@ class conditionalmodel(model):
         """
         if not self.callingback:
             if self.verbose:
-                print "Function eval #", self.fnevals
+                print("Function eval #", self.fnevals)
 
             if params is not None:
                 self.setparams(params)
@@ -984,7 +990,7 @@ class conditionalmodel(model):
         L = np.dot(self.p_tilde_context, logZs) - np.dot(self.params, self.K)
 
         if self.verbose and self.external is None:
-            print "  dual is ", L
+            print("  dual is ", L)
 
         # Use a Gaussian prior for smoothing if requested.
         # This adds the penalty term \sum_{i=1}^m \theta_i^2 / {2 \sigma_i^2}
@@ -992,7 +998,7 @@ class conditionalmodel(model):
             penalty = 0.5 * (self.params**2 / self.sigma2).sum()
             L += penalty
             if self.verbose and self.external is None:
-                print "  regularized dual is ", L
+                print("  regularized dual is ", L)
 
         if not self.callingback:
             if hasattr(self, 'callback_dual'):
@@ -1044,7 +1050,7 @@ class conditionalmodel(model):
         # p is now an array representing p(x | w) for each class w.  Now we
         # multiply the appropriate elements by p_tilde(w) to get the hybrid pmf
         # required for conditional modelling:
-        for w in xrange(numcontexts):
+        for w in range(numcontexts):
             p[w*S : (w+1)*S] *= self.p_tilde_context[w]
 
         # Use the representation E_p[f(X)] = p . F
@@ -1078,10 +1084,10 @@ class conditionalmodel(model):
         if not hasattr(self, 'logZ'):
             # Compute the norm constant (quickly!)
             self.logZ = np.zeros(numcontexts, float)
-            for w in xrange(numcontexts):
+            for w in range(numcontexts):
                 self.logZ[w] = logsumexp(log_p_dot[w*S : (w+1)*S])
         # Renormalize
-        for w in xrange(numcontexts):
+        for w in range(numcontexts):
             log_p_dot[w*S : (w+1)*S] -= self.logZ[w]
         return log_p_dot
 
@@ -1158,7 +1164,7 @@ class bigmodel(basemodel):
         """
 
         if self.verbose >= 3:
-            print "(sampling)"
+            print("(sampling)")
 
         # First delete the existing sample matrix to save memory
         # This matters, since these can be very large
@@ -1167,7 +1173,7 @@ class bigmodel(basemodel):
                 exec('del self.' + var)
 
         # Now generate a new sample
-        output = self.sampleFgen.next()
+        output = next(self.sampleFgen)
         try:
             len(output)
         except TypeError:
@@ -1195,7 +1201,7 @@ class bigmodel(basemodel):
                 raise ValueError("the sample feature generator returned"
                                   " a feature matrix of incorrect dimensions")
         if self.verbose >= 3:
-            print "(done)"
+            print("(done)")
 
         # Now clear the temporary variables that are no longer correct for this
         # sample
@@ -1325,7 +1331,7 @@ class bigmodel(basemodel):
         """
 
         if self.verbose >= 3:
-            print "(estimating dual and gradient ...)"
+            print("(estimating dual and gradient ...)")
 
         # Hereafter is the matrix code
 
@@ -1334,7 +1340,7 @@ class bigmodel(basemodel):
 
         for trial in range(self.matrixtrials):
             if self.verbose >= 2 and self.matrixtrials > 1:
-                print "(trial " + str(trial) + " ...)"
+                print("(trial " + str(trial) + " ...)")
 
             # Resample if necessary
             if (not self.staticsample) or self.matrixtrials > 1:
@@ -1514,7 +1520,7 @@ class bigmodel(basemodel):
         enough properties for the algorithm to converge.
         """
         if self.verbose:
-            print "Starting stochastic approximation..."
+            print("Starting stochastic approximation...")
 
         # If we have resumed fitting, adopt the previous parameter k
         try:
@@ -1554,9 +1560,9 @@ class bigmodel(basemodel):
                             self.nosignswitch.append(k)
                         except AttributeError:
                             self.nosignswitch = [k]
-                        print "No sign switch at iteration " + str(k)
+                        print("No sign switch at iteration " + str(k))
                     if self.verbose >= 2:
-                        print "(using Deylon acceleration.  n is " + str(n) + " instead of " + str(k - self.a_0_hold) + "...)"
+                        print("(using Deylon acceleration.  n is " + str(n) + " instead of " + str(k - self.a_0_hold) + "...)")
                 if self.ruppertaverage:
                     if self.stepdecreaserate is None:
                         # Use log n / n as the default.  Note: this requires a
@@ -1574,7 +1580,7 @@ class bigmodel(basemodel):
                     a_k = 1.0 * self.a_0 / (n ** self.stepdecreaserate)
             # otherwise leave step size unchanged
             if self.verbose:
-                print "  step size is: " + str(a_k)
+                print("  step size is: " + str(a_k))
 
             self.matrixtrials = 1
             self.staticsample = False
@@ -1596,10 +1602,10 @@ class bigmodel(basemodel):
                 y_k = self.mu - K
             norm_y_k = norm(y_k)
             if self.verbose:
-                print "SA: after iteration " + str(k)
-                print "  approx dual fn is: " + str(self.logZapprox \
-                            - np.dot(self.params, K))
-                print "  norm(mu_est - k) = " + str(norm_y_k)
+                print("SA: after iteration " + str(k))
+                print("  approx dual fn is: " + str(self.logZapprox \
+                            - np.dot(self.params, K)))
+                print("  norm(mu_est - k) = " + str(norm_y_k))
 
             # Update params (after the convergence tests too ... don't waste the
             # computation.)
@@ -1609,15 +1615,15 @@ class bigmodel(basemodel):
                 newparams = self.params - a_k*y_k
                 avgparams = (k-1.0)/k*avgparams + 1.0/k * newparams
                 if self.verbose:
-                    print "  new params[0:5] are: " + str(avgparams[0:5])
+                    print("  new params[0:5] are: " + str(avgparams[0:5]))
                 self.setparams(avgparams)
             else:
                 # Use the standard Robbins-Monro estimator
                 self.setparams(self.params - a_k*y_k)
 
             if k >= self.maxiter:
-                print "Reached maximum # iterations during stochastic" \
-                        " approximation without convergence."
+                print("Reached maximum # iterations during stochastic" \
+                        " approximation without convergence.")
                 break
 
 
@@ -1669,20 +1675,20 @@ class bigmodel(basemodel):
         self.K.
         """
         if self.verbose:
-            print "  max(params**2)    = " + str((self.params**2).max())
+            print("  max(params**2)    = " + str((self.params**2).max()))
 
         if self.verbose:
-            print "Now testing model on external sample(s) ..."
+            print("Now testing model on external sample(s) ...")
 
         # Estimate the entropy dual and gradient for each sample.  These
         # are not regularized (smoothed).
         dualapprox = []
         gradnorms = []
-        for e in xrange(len(self.externalFs)):
+        for e in range(len(self.externalFs)):
             self.external = e
             self.clearcache()
             if self.verbose >= 2:
-                print "(testing with sample %d)" % e
+                print("(testing with sample %d)" % e)
             dualapprox.append(self.dual(ignorepenalty=True, ignoretest=True))
             gradnorms.append(norm(self.grad(ignorepenalty=True)))
 
@@ -1695,19 +1701,19 @@ class bigmodel(basemodel):
         self.external_gradnorms[self.iters] = gradnorms
 
         if self.verbose:
-            print "** Mean (unregularized) dual estimate from the %d" \
+            print("** Mean (unregularized) dual estimate from the %d" \
                   " external samples is %f" % \
-                 (len(self.externalFs), meandual)
-            print "** Mean mean square error of the (unregularized) feature" \
+                 (len(self.externalFs), meandual))
+            print("** Mean mean square error of the (unregularized) feature" \
                     " expectation estimates from the external samples =" \
-                    " mean(|| \hat{\mu_e} - k ||,axis=0) =", np.average(gradnorms,axis=0)
+                    " mean(|| \hat{\mu_e} - k ||,axis=0) =", np.average(gradnorms,axis=0))
         # Track the parameter vector params with the lowest mean dual estimate
         # so far:
         if meandual < self.bestdual:
             self.bestdual = meandual
             self.bestparams = self.params
             if self.verbose:
-                print "\n\t\t\tStored new minimum entropy dual: %f\n" % meandual
+                print("\n\t\t\tStored new minimum entropy dual: %f\n" % meandual)
 
 
 def _test():
