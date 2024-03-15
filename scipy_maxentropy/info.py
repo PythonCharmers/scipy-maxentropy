@@ -82,4 +82,4 @@ simulation.
 # License: BSD-style (see LICENSE.txt in main source directory)
 
 postpone_import = 1
-depends = ['optimize']
+depends = ["optimize"]

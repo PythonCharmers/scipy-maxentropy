@@ -15,7 +15,7 @@ License: BSD-style (see LICENSE.txt in main source directory)
 """
 
 __author__ = "Ed Schofield"
-__version__ = '0.4.0'
+__version__ = "0.4.0"
 
 import random
 import math
@@ -26,15 +26,16 @@ from scipy import sparse
 from scipy.special import logsumexp
 
 
-__all__ = ['feature_sampler',
-           'dictsample',
-           'dictsampler',
-           'auxiliary_sampler_scipy',
-           'evaluate_feature_matrix',
-           'innerprod',
-           'innerprodtranspose',
-           'DivergenceError']
-
+__all__ = [
+    "feature_sampler",
+    "dictsample",
+    "dictsampler",
+    "auxiliary_sampler_scipy",
+    "evaluate_feature_matrix",
+    "innerprod",
+    "innerprodtranspose",
+    "DivergenceError",
+]
 
 
 def feature_sampler(vec_f, auxiliary_sampler):
@@ -72,7 +73,7 @@ def feature_sampler(vec_f, auxiliary_sampler):
         yield F, log_q_xs, xs
 
 
-def dictsample(freq, size=(), return_probs='logprob'):
+def dictsample(freq, size=(), return_probs="logprob"):
     """
     Create a sample of the given size from the specified discrete distribution.
 
@@ -116,15 +117,15 @@ def dictsample(freq, size=(), return_probs='logprob'):
     if return_probs is None:
         return sample
     sampleprobs = probs[indices]
-    if return_probs == 'prob':
+    if return_probs == "prob":
         return sample, sampleprobs
-    elif return_probs == 'logprob':
+    elif return_probs == "logprob":
         return sample, np.log(sampleprobs)
     else:
         raise ValueError('return_probs must be "prob", "logprob", or None')
 
 
-def dictsampler(freq, size=(), return_probs='logprob'):
+def dictsampler(freq, size=(), return_probs="logprob"):
     """
     A generator function that yields samples of the given size from the
     specified discrete distribution.
@@ -182,19 +183,19 @@ def _logsumexpcomplex(values):
             b_i = next(iterator) + 0j
         except StopIteration:
             # empty
-            return float('-inf')
-        if b_i.real != float('-inf'):
+            return float("-inf")
+        if b_i.real != float("-inf"):
             break
 
     # Now the rest
     for a_i in iterator:
         a_i += 0j
         if b_i.real > a_i.real:
-            increment = robustlog(1.+cmath.exp(a_i - b_i))
+            increment = robustlog(1.0 + cmath.exp(a_i - b_i))
             # print "Increment is " + str(increment)
             b_i = b_i + increment
         else:
-            increment = robustlog(1.+cmath.exp(b_i - a_i))
+            increment = robustlog(1.0 + cmath.exp(b_i - a_i))
             # print "Increment is " + str(increment)
             b_i = a_i + increment
 
@@ -216,8 +217,8 @@ def robustlog(x):
     """Returns log(x) if x > 0, the complex log cmath.log(x) if x < 0,
     or float('-inf') if x == 0.
     """
-    if x == 0.:
-        return float('-inf')
+    if x == 0.0:
+        return float("-inf")
     elif type(x) is complex or (type(x) is float and x < 0):
         return cmath.log(x)
     else:
@@ -225,22 +226,22 @@ def robustlog(x):
 
 
 def _robustarraylog(x):
-    """ An array version of robustlog.  Operates on a real array x.
-    """
+    """An array version of robustlog.  Operates on a real array x."""
     arraylog = empty(len(x), np.complex64)
     for i in range(len(x)):
         xi = x[i]
         if xi > 0:
             arraylog[i] = math.log(xi)
-        elif xi == 0.:
-            arraylog[i] = float('-inf')
+        elif xi == 0.0:
+            arraylog[i] = float("-inf")
         else:
             arraylog[i] = cmath.log(xi)
     return arraylog
 
-#try:
+
+# try:
 #    from logsumexp import logsumexp, logsumexpcomplex, robustarraylog
-#except:
+# except:
 #    print "Warning: could not load the fast FORTRAN library for logsumexp()."
 #    logsumexp = _logsumexp
 #    logsumexpcomplex = _logsumexpcomplex
@@ -262,12 +263,15 @@ def arrayexp(x):
     try:
         ex = np.exp(x)
     except OverflowError:
-        print("Warning: OverflowError using np.exp(). Using slower Python"\
-              " routines instead!")
+        print(
+            "Warning: OverflowError using np.exp(). Using slower Python"
+            " routines instead!"
+        )
         ex = np.empty(len(x), float)
         for j in range(len(x)):
             ex[j] = math.exp(x[j])
     return ex
+
 
 def arrayexpcomplex(x):
     """
@@ -311,6 +315,7 @@ def densefeatures(f, x):
 
     return np.array([fi(x) for fi in f])
 
+
 def densefeaturematrix(f, sample):
     """Returns an (m x n) dense array of non-zero evaluations of the
     scalar functions fi in the list f at the points x_1,...,x_n in the
@@ -327,18 +332,18 @@ def densefeaturematrix(f, sample):
         f_i = f[i]
         for j in range(n):
             x = sample[j]
-            F[i,j] = f_i(x)
+            F[i, j] = f_i(x)
 
-     #for j in xrange(n):
-     #   x = sample[j]
-     #   for i in xrange(m):
-     #       F[j,i] = f[i](x)
+    # for j in xrange(n):
+    #   x = sample[j]
+    #   for i in xrange(m):
+    #       F[j,i] = f[i](x)
 
     return F
 
 
-def sparsefeatures(f, x, format='csc_matrix'):
-    """ Returns an Mx1 sparse matrix of non-zero evaluations of the
+def sparsefeatures(f, x, format="csc_matrix"):
+    """Returns an Mx1 sparse matrix of non-zero evaluations of the
     scalar functions f_1,...,f_m in the list f at the point x.
 
     If format='ll_mat', the PySparse module (or a symlink to it) must be
@@ -347,10 +352,11 @@ def sparsefeatures(f, x, format='csc_matrix'):
     sandbox/pysparse directory.
     """
     m = len(f)
-    if format == 'll_mat':
+    if format == "ll_mat":
         import spmatrix
+
         sparsef = spmatrix.ll_mat(m, 1)
-    elif format in ('dok_matrix', 'csc_matrix', 'csr_matrix'):
+    elif format in ("dok_matrix", "csc_matrix", "csr_matrix"):
         sparsef = sparse.dok_matrix((m, 1))
 
     for i in range(m):
@@ -358,16 +364,17 @@ def sparsefeatures(f, x, format='csc_matrix'):
         if f_i_x != 0:
             sparsef[i, 0] = f_i_x
 
-    if format == 'csc_matrix':
+    if format == "csc_matrix":
         print("Converting to CSC matrix ...")
         return sparsef.tocsc()
-    elif format == 'csr_matrix':
+    elif format == "csr_matrix":
         print("Converting to CSR matrix ...")
         return sparsef.tocsr()
     else:
         return sparsef
 
-def sparsefeaturematrix(f, sample, format='csc_matrix'):
+
+def sparsefeaturematrix(f, sample, format="csc_matrix"):
     """Returns an (m x n) sparse matrix of non-zero evaluations of the scalar
     or vector functions f_1,...,f_m in the list f at the points
     x_1,...,x_n in the sequence 'sample'.
@@ -380,10 +387,11 @@ def sparsefeaturematrix(f, sample, format='csc_matrix'):
 
     m = len(f)
     n = len(sample)
-    if format == 'll_mat':
+    if format == "ll_mat":
         import spmatrix
+
         sparseF = spmatrix.ll_mat(m, n)
-    elif format in ('dok_matrix', 'csc_matrix', 'csr_matrix'):
+    elif format in ("dok_matrix", "csc_matrix", "csr_matrix"):
         sparseF = sparse.dok_matrix((m, n))
     else:
         raise ValueError("sparse matrix format not recognized")
@@ -394,18 +402,17 @@ def sparsefeaturematrix(f, sample, format='csc_matrix'):
             x = sample[j]
             f_i_x = f_i(x)
             if f_i_x != 0:
-                sparseF[i,j] = f_i_x
+                sparseF[i, j] = f_i_x
 
-    if format == 'csc_matrix':
+    if format == "csc_matrix":
         return sparseF.tocsc()
-    elif format == 'csr_matrix':
+    elif format == "csr_matrix":
         return sparseF.tocsr()
     else:
         return sparseF
 
 
-
-def dotprod(u,v):
+def dotprod(u, v):
     """
     This is a wrapper around general dense or sparse dot products.
 
@@ -416,25 +423,24 @@ def dotprod(u,v):
     (m x 1) (dense) numpy array v.
 
     """
-    #print "Taking the dot product u.v, where"
-    #print "u has shape " + str(u.shape)
-    #print "v = " + str(v)
+    # print "Taking the dot product u.v, where"
+    # print "u has shape " + str(u.shape)
+    # print "v = " + str(v)
 
     try:
         dotprod = np.array([0.0])  # a 1x1 array.  Required by spmatrix.
         u.matvec(v, dotprod)
-        return dotprod[0]               # extract the scalar
+        return dotprod[0]  # extract the scalar
     except AttributeError:
         # Assume u is a dense array.
-        return np.dot(u,v)
+        return np.dot(u, v)
 
 
-
-def innerprod(A,v):
+def innerprod(A, v):
     return A @ v
 
 
-def innerprodtranspose(A,v):
+def innerprodtranspose(A, v):
     """
     This is a wrapper around general dense or sparse dot products.
 
@@ -461,7 +467,7 @@ def innerprodtranspose(A,v):
                 x = np.dot(vcolumn, A)
                 return np.reshape(x, (n,))
             else:
-                #(vm, vn) = v.shape
+                # (vm, vn) = v.shape
                 # Assume vm == m
                 x = np.dot(np.transpose(v), A)
                 return np.transpose(x)
@@ -491,10 +497,10 @@ def rowmeans(A):
         try:
             n = A.shape[1]
         except AttributeError:
-            raise TypeError("rowmeans() only works with sparse and dense "
-                            "arrays")
+            raise TypeError("rowmeans() only works with sparse and dense " "arrays")
         rowsum = innerprod(A, np.ones(n, float))
         return rowsum / float(n)
+
 
 def columnmeans(A):
     """
@@ -518,10 +524,10 @@ def columnmeans(A):
         try:
             m = A.shape[0]
         except AttributeError:
-            raise TypeError("columnmeans() only works with sparse and dense "
-                            "arrays")
+            raise TypeError("columnmeans() only works with sparse and dense " "arrays")
         columnsum = innerprodtranspose(A, np.ones(m, float))
         return columnsum / float(m)
+
 
 def columnvariances(A):
     """
@@ -540,15 +546,17 @@ def columnvariances(A):
 
     """
     if type(A) is np.ndarray:
-        return np.std(A,0)**2
+        return np.std(A, 0) ** 2
     else:
         try:
             m = A.shape[0]
         except AttributeError:
-            raise TypeError("columnvariances() only works with sparse "
-                            "and dense arrays")
+            raise TypeError(
+                "columnvariances() only works with sparse " "and dense arrays"
+            )
         means = columnmeans(A)
-        return columnmeans((A-means)**2) * (m/(m-1.0))
+        return columnmeans((A - means) ** 2) * (m / (m - 1.0))
+
 
 def flatten(a):
     """Flattens the sparse matrix or dense array/matrix 'a' into a
@@ -559,9 +567,10 @@ def flatten(a):
     else:
         return np.asarray(a).flatten()
 
+
 class DivergenceError(Exception):
-    """Exception raised if the entropy dual has no finite minimum.
-    """
+    """Exception raised if the entropy dual has no finite minimum."""
+
     def __init__(self, message):
         self.message = message
         Exception.__init__(self)
@@ -569,9 +578,12 @@ class DivergenceError(Exception):
     def __str__(self):
         return repr(self.message)
 
+
 def _test():
     import doctest
+
     doctest.testmod()
+
 
 if __name__ == "__main__":
     _test()

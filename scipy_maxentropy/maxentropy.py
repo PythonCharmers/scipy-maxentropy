@@ -14,7 +14,7 @@ first posted on SourceForge as part of the "textmodeller" project in 2002.
 from __future__ import division
 
 __author__ = "Ed Schofield"
-__version__ = '0.4.0'
+__version__ = "0.4.0"
 
 
 import math, types, pickle
@@ -23,9 +23,16 @@ from numpy import exp, asarray
 from scipy import optimize
 from scipy.linalg import norm
 from scipy.special import logsumexp
-from .maxentutils import arrayexp, \
-        innerprod, innerprodtranspose, columnmeans, columnvariances, \
-        flatten, DivergenceError, sparsefeaturematrix
+from .maxentutils import (
+    arrayexp,
+    innerprod,
+    innerprodtranspose,
+    columnmeans,
+    columnvariances,
+    flatten,
+    DivergenceError,
+    sparsefeaturematrix,
+)
 
 
 class BaseModel(object):
@@ -35,7 +42,7 @@ class BaseModel(object):
 
     def __init__(self):
         self.format = self.__class__.__name__[:4]
-        if self.format == 'base':
+        if self.format == "base":
             raise ValueError("this class cannot be instantiated directly")
         self.verbose = False
 
@@ -51,13 +58,13 @@ class BaseModel(object):
 
         self.maxiter = 1000
         self.maxfun = 1500
-        self.mindual = -100.    # The entropy dual must actually be
-                                # non-negative, but the estimate may be
-                                # slightly out with bigmodel instances
-                                # without implying divergence to -inf
+        self.mindual = -100.0  # The entropy dual must actually be
+        # non-negative, but the estimate may be
+        # slightly out with bigmodel instances
+        # without implying divergence to -inf
         self.callingback = False
-        self.iters = 0          # the number of iterations so far of the
-                                # optimization algorithm
+        self.iters = 0  # the number of iterations so far of the
+        # optimization algorithm
         self.fnevals = 0
         self.gradevals = 0
 
@@ -86,8 +93,7 @@ class BaseModel(object):
         self.external = None
         self.externalpriorlogprobs = None
 
-
-    def fit(self, K, algorithm='CG'):
+    def fit(self, K, algorithm="CG"):
         """Fit the maxent model p whose feature expectations are given
         by the vector K.
 
@@ -136,14 +142,17 @@ class BaseModel(object):
 
         if isinstance(self, bigmodel):
             # Ensure the sample matrix has been set
-            if not hasattr(self, 'sampleF') and hasattr(self, 'samplelogprobs'):
-                raise AttributeError("first specify a sample feature matrix"
-                                      " using sampleFgen()")
+            if not hasattr(self, "sampleF") and hasattr(self, "samplelogprobs"):
+                raise AttributeError(
+                    "first specify a sample feature matrix" " using sampleFgen()"
+                )
         else:
             # Ensure the feature matrix for the sample space has been set
-            if not hasattr(self, 'F'):
-                raise AttributeError("first specify a feature matrix"
-                                      " using setfeaturesandsamplespace()")
+            if not hasattr(self, "F"):
+                raise AttributeError(
+                    "first specify a feature matrix"
+                    " using setfeaturesandsamplespace()"
+                )
 
         # First convert K to a numpy array if necessary
         K = np.asarray(K, float)
@@ -168,67 +177,105 @@ class BaseModel(object):
 
         callback = self.log
 
-        if algorithm == 'CG':
-            retval = optimize.fmin_cg(dual, oldparams, grad, (), self.avegtol, \
-                                      maxiter=self.maxiter, full_output=1, \
-                                      disp=self.verbose, retall=0,
-                                      callback=callback)
+        if algorithm == "CG":
+            retval = optimize.fmin_cg(
+                dual,
+                oldparams,
+                grad,
+                (),
+                self.avegtol,
+                maxiter=self.maxiter,
+                full_output=1,
+                disp=self.verbose,
+                retall=0,
+                callback=callback,
+            )
 
             (newparams, fopt, func_calls, grad_calls, warnflag) = retval
 
-        elif algorithm == 'LBFGSB':
+        elif algorithm == "LBFGSB":
             if callback is not None:
-                raise NotImplementedError("L-BFGS-B optimization algorithm"
-                        " does not yet support callback functions for"
-                        " testing with an external sample")
-            retval = optimize.fmin_l_bfgs_b(dual, oldparams, \
-                        grad, args=(), bounds=self.bounds, pgtol=self.maxgtol,
-                        maxfun=self.maxfun)
+                raise NotImplementedError(
+                    "L-BFGS-B optimization algorithm"
+                    " does not yet support callback functions for"
+                    " testing with an external sample"
+                )
+            retval = optimize.fmin_l_bfgs_b(
+                dual,
+                oldparams,
+                grad,
+                args=(),
+                bounds=self.bounds,
+                pgtol=self.maxgtol,
+                maxfun=self.maxfun,
+            )
             (newparams, fopt, d) = retval
-            warnflag, func_calls = d['warnflag'], d['funcalls']
+            warnflag, func_calls = d["warnflag"], d["funcalls"]
             if self.verbose:
                 print(algorithm + " optimization terminated successfully.")
                 print("\tFunction calls: " + str(func_calls))
                 # We don't have info on how many gradient calls the LBFGSB
                 # algorithm makes
 
-        elif algorithm == 'BFGS':
-            retval = optimize.fmin_bfgs(dual, oldparams, \
-                                        grad, (), self.tol, \
-                                        maxiter=self.maxiter, full_output=1, \
-                                        disp=self.verbose, retall=0, \
-                                        callback=callback)
+        elif algorithm == "BFGS":
+            retval = optimize.fmin_bfgs(
+                dual,
+                oldparams,
+                grad,
+                (),
+                self.tol,
+                maxiter=self.maxiter,
+                full_output=1,
+                disp=self.verbose,
+                retall=0,
+                callback=callback,
+            )
 
             (newparams, fopt, gopt, Lopt, func_calls, grad_calls, warnflag) = retval
 
-        elif algorithm == 'Powell':
-            retval = optimize.fmin_powell(dual, oldparams, args=(), \
-                                   xtol=self.tol, ftol = self.tol, \
-                                   maxiter=self.maxiter, full_output=1, \
-                                   disp=self.verbose, retall=0, \
-                                   callback=callback)
+        elif algorithm == "Powell":
+            retval = optimize.fmin_powell(
+                dual,
+                oldparams,
+                args=(),
+                xtol=self.tol,
+                ftol=self.tol,
+                maxiter=self.maxiter,
+                full_output=1,
+                disp=self.verbose,
+                retall=0,
+                callback=callback,
+            )
 
             (newparams, fopt, direc, numiter, func_calls, warnflag) = retval
 
-        elif algorithm == 'Nelder-Mead':
-            retval = optimize.fmin(dual, oldparams, args=(), \
-                                   xtol=self.tol, ftol = self.tol, \
-                                   maxiter=self.maxiter, full_output=1, \
-                                   disp=self.verbose, retall=0, \
-                                   callback=callback)
+        elif algorithm == "Nelder-Mead":
+            retval = optimize.fmin(
+                dual,
+                oldparams,
+                args=(),
+                xtol=self.tol,
+                ftol=self.tol,
+                maxiter=self.maxiter,
+                full_output=1,
+                disp=self.verbose,
+                retall=0,
+                callback=callback,
+            )
 
             (newparams, fopt, numiter, func_calls, warnflag) = retval
 
         else:
-            raise AttributeError("the specified algorithm '" + str(algorithm)
-                    + "' is unsupported.  Options are 'CG', 'LBFGSB', "
-                    "'Nelder-Mead', 'Powell', and 'BFGS'")
+            raise AttributeError(
+                "the specified algorithm '"
+                + str(algorithm)
+                + "' is unsupported.  Options are 'CG', 'LBFGSB', "
+                "'Nelder-Mead', 'Powell', and 'BFGS'"
+            )
 
         if np.any(self.params != newparams):
             self.setparams(newparams)
         self.func_calls = func_calls
-
-
 
     def dual(self, params=None, ignorepenalty=False, ignoretest=False):
         """Computes the Lagrangian dual L(theta) of the entropy of the
@@ -283,7 +330,7 @@ class BaseModel(object):
         # This adds the penalty term \sum_{i=1}^m \params_i^2 / {2 \sigma_i^2}.
         # Define 0 / 0 = 0 here; this allows a variance term of
         # sigma_i^2==0 to indicate that feature i should be ignored.
-        if self.sigma2 is not None and ignorepenalty==False:
+        if self.sigma2 is not None and ignorepenalty == False:
             ratios = np.nan_to_num(self.params**2 / self.sigma2)
             # Why does the above convert inf to 1.79769e+308?
 
@@ -292,8 +339,7 @@ class BaseModel(object):
                 print("  regularized dual is ", L)
 
         if not self.callingback and self.external is None:
-            if hasattr(self, 'callback_dual') \
-                               and self.callback_dual is not None:
+            if hasattr(self, "callback_dual") and self.callback_dual is not None:
                 # Prevent infinite recursion if the callback function
                 # calls dual():
                 self.callingback = True
@@ -305,7 +351,6 @@ class BaseModel(object):
 
         # (We don't reset self.params to its prior value.)
         return L
-
 
     # An alias for the dual function:
     entropydual = dual
@@ -331,7 +376,7 @@ class BaseModel(object):
                 self.gradnorms[self.iters] = norm(self.grad())
 
         if not self.callingback and self.external is None:
-            if hasattr(self, 'callback'):
+            if hasattr(self, "callback"):
                 # Prevent infinite recursion if the callback function
                 # calls dual():
                 self.callingback = True
@@ -340,7 +385,11 @@ class BaseModel(object):
 
         # Do we perform a test on external sample(s) every iteration?
         # Only relevant to bigmodel objects
-        if hasattr(self, 'testevery') and self.testevery is not None and self.testevery > 0:
+        if (
+            hasattr(self, "testevery")
+            and self.testevery is not None
+            and self.testevery > 0
+        ):
             if (self.iters + 1) % self.testevery != 0:
                 if self.verbose:
                     print("Skipping test on external sample(s) ...")
@@ -349,16 +398,16 @@ class BaseModel(object):
 
         if not self.callingback and self.external is None:
             if self.mindual > -np.inf and self.dual() < self.mindual:
-                raise DivergenceError("dual is below the threshold 'mindual'"
-                        " and may be diverging to -inf.  Fix the constraints"
-                        " or lower the threshold!")
+                raise DivergenceError(
+                    "dual is below the threshold 'mindual'"
+                    " and may be diverging to -inf.  Fix the constraints"
+                    " or lower the threshold!"
+                )
 
         self.iters += 1
 
-
     def grad(self, params=None, ignorepenalty=False):
-        """Computes or estimates the gradient of the entropy dual.
-        """
+        """Computes or estimates the gradient of the entropy dual."""
 
         if self.verbose and self.external is None and not self.callingback:
             print("Grad eval #" + str(self.gradevals))
@@ -369,7 +418,7 @@ class BaseModel(object):
         G = self.expectations() - self.K
 
         if self.verbose and self.external is None:
-            print("  norm of gradient =",  norm(G))
+            print("  norm of gradient =", norm(G))
 
         # (We don't reset params to its prior value.)
 
@@ -377,7 +426,7 @@ class BaseModel(object):
         # partial derivative of the penalty term is \params_i /
         # \sigma_i^2.  Define 0 / 0 = 0 here; this allows a variance term
         # of sigma_i^2==0 to indicate that feature i should be ignored.
-        if self.sigma2 is not None and ignorepenalty==False:
+        if self.sigma2 is not None and ignorepenalty == False:
             penalty = self.params / self.sigma2
             G += penalty
             features_to_kill = np.where(np.isnan(penalty))[0]
@@ -387,8 +436,7 @@ class BaseModel(object):
                 print("  norm of regularized gradient =", normG)
 
         if not self.callingback and self.external is None:
-            if hasattr(self, 'callback_grad') \
-                               and self.callback_grad is not None:
+            if hasattr(self, "callback_grad") and self.callback_grad is not None:
                 # Prevent infinite recursion if the callback function
                 # calls grad():
                 self.callingback = True
@@ -399,7 +447,6 @@ class BaseModel(object):
             self.gradevals += 1
 
         return G
-
 
     def crossentropy(self, fx, log_prior_x=None, base=np.e):
         """Returns the cross entropy H(q, p) of the empirical
@@ -424,7 +471,6 @@ class BaseModel(object):
         else:
             return H
 
-
     def normconst(self):
         """Returns the normalization constant, or partition function, for
         the current model.  Warning -- this may be too large to represent;
@@ -436,7 +482,6 @@ class BaseModel(object):
         from aux_dist.
         """
         return np.exp(self.lognormconst())
-
 
     def setsmooth(self, sigma):
         """Specifies that the entropy dual and gradient should be
@@ -452,14 +497,13 @@ class BaseModel(object):
         """
         self.sigma2 = sigma**2
 
-
     def setparams(self, params):
         """Set the parameter vector to params, replacing the existing
         parameters.  params must be a list or numpy array of the same
         length as the model's feature vector f.
         """
 
-        self.params = np.array(params, float)        # make a copy
+        self.params = np.array(params, float)  # make a copy
 
         # Log the new params to disk
         self.logparams()
@@ -467,14 +511,13 @@ class BaseModel(object):
         # Delete params-specific stuff
         self.clearcache()
 
-
     def clearcache(self):
         """Clears the interim results of computations depending on the
         parameters and the sample.
         """
-        for var in ['mu', 'logZ', 'logZapprox', 'logv']:
+        for var in ["mu", "logZ", "logZapprox", "logv"]:
             if hasattr(self, var):
-                exec('del self.' + var)
+                exec("del self." + var)
 
     def reset(self, numfeatures=None):
         """Resets the parameters self.params to zero, clearing the cache
@@ -486,13 +529,13 @@ class BaseModel(object):
             m = numfeatures
         else:
             # Try to infer the number of parameters from existing state
-            if hasattr(self, 'params'):
+            if hasattr(self, "params"):
                 m = len(self.params)
-            elif hasattr(self, 'F'):
+            elif hasattr(self, "F"):
                 m = self.F.shape[0]
-            elif hasattr(self, 'sampleF'):
+            elif hasattr(self, "sampleF"):
                 m = self.sampleF.shape[0]
-            elif hasattr(self, 'K'):
+            elif hasattr(self, "K"):
                 m = len(self.K)
             else:
                 raise ValueError("specify the number of features / parameters")
@@ -502,7 +545,7 @@ class BaseModel(object):
 
         # These bounds on the param values are only effective for the
         # L-BFGS-B optimizer:
-        self.bounds = [(-100., 100.)]*len(self.params)
+        self.bounds = [(-100.0, 100.0)] * len(self.params)
 
         self.fnevals = 0
         self.gradevals = 0
@@ -512,16 +555,14 @@ class BaseModel(object):
         # Clear the stored duals and gradient norms
         self.duals = {}
         self.gradnorms = {}
-        if hasattr(self, 'external_duals'):
+        if hasattr(self, "external_duals"):
             self.external_duals = {}
-        if hasattr(self, 'external_gradnorms'):
+        if hasattr(self, "external_gradnorms"):
             self.external_gradnorms = {}
-        if hasattr(self, 'external'):
+        if hasattr(self, "external"):
             self.external = None
 
-
-    def setcallback(self, callback=None, callback_dual=None, \
-                    callback_grad=None):
+    def setcallback(self, callback=None, callback_dual=None, callback_grad=None):
         """Sets callback functions to be called every iteration, every
         function evaluation, or every gradient evaluation. All callback
         functions are passed one argument, the current model object.
@@ -539,7 +580,7 @@ class BaseModel(object):
         enabled and the # of iterations since the last save has reached
         self.paramslogfreq.
         """
-        if not hasattr(self, 'paramslogcounter'):
+        if not hasattr(self, "paramslogcounter"):
             # Assume beginlogging() was never called
             return
         self.paramslogcounter += 1
@@ -552,12 +593,13 @@ class BaseModel(object):
 
         if self.verbose:
             print("Saving parameters ...")
-        paramsfile = open(self.paramslogfilename + '.' + \
-                          str(self.paramslogcounter) + '.pickle', 'wb')
+        paramsfile = open(
+            self.paramslogfilename + "." + str(self.paramslogcounter) + ".pickle", "wb"
+        )
         pickle.dump(self.params, paramsfile, pickle.HIGHEST_PROTOCOL)
         paramsfile.close()
-        #self.paramslog += 1
-        #self.paramslogcounter = 0
+        # self.paramslog += 1
+        # self.paramslogcounter = 0
         if self.verbose:
             print("Done.")
 
@@ -571,11 +613,10 @@ class BaseModel(object):
         self.paramslogcounter = 0
         self.paramslogfilename = filename
         self.paramslogfreq = freq
-        #self.paramslog = 1
+        # self.paramslog = 1
 
     def endlogging(self):
-        """Stop logging param values whenever setparams() is called.
-        """
+        """Stop logging param values whenever setparams() is called."""
         del self.paramslogcounter
         del self.paramslogfilename
         del self.paramslogfreq
@@ -585,20 +626,20 @@ class BaseModel(object):
 basemodel = BaseModel
 
 
-
 class Model(BaseModel):
     """A maximum-entropy (exponential-form) model on a discrete sample
     space.
     """
+
     def __init__(self, f=None, samplespace=None):
         super(Model, self).__init__()
 
         if f is not None and samplespace is not None:
             self.setfeaturesandsamplespace(f, samplespace)
         elif f is not None and samplespace is None:
-            raise ValueError("not supported: specify both features and"
-                    " sample space or neither")
-
+            raise ValueError(
+                "not supported: specify both features and" " sample space or neither"
+            )
 
     def setfeaturesandsamplespace(self, f, samplespace):
         """Creates a new matrix self.F of features f of all points in the
@@ -614,8 +655,7 @@ class Model(BaseModel):
         self.f = f
         self.reset(numfeatures=len(f))
         self.samplespace = samplespace
-        self.F = sparsefeaturematrix(f, samplespace, 'csr_matrix')
-
+        self.F = sparsefeaturematrix(f, samplespace, "csr_matrix")
 
     def lognormconst(self):
         """Compute the log of the normalization constant (partition
@@ -623,11 +663,11 @@ class Model(BaseModel):
         The sample space must be discrete and finite.
         """
         # See if it's been precomputed
-        if hasattr(self, 'logZ'):
+        if hasattr(self, "logZ"):
             return self.logZ
 
         # Has F = {f_i(x_j)} been precomputed?
-        if not hasattr(self, 'F'):
+        if not hasattr(self, "F"):
             raise AttributeError("first create a feature matrix F")
 
         # Good, assume the feature matrix exists
@@ -640,13 +680,12 @@ class Model(BaseModel):
         self.logZ = logsumexp(log_p_dot)
         return self.logZ
 
-
     def expectations(self):
         """The vector E_p[f(X)] under the model p_params of the vector of
         feature functions f_i over the sample space.
         """
         # For discrete models, use the representation E_p[f(X)] = p . F
-        if not hasattr(self, 'F'):
+        if not hasattr(self, "F"):
             raise AttributeError("first set the feature matrix F")
 
         # A pre-computed matrix of features exists
@@ -660,7 +699,7 @@ class Model(BaseModel):
         parameter vector self.params).
         """
         # Have the features already been computed and stored?
-        if not hasattr(self, 'F'):
+        if not hasattr(self, "F"):
             raise AttributeError("first set the feature matrix F")
 
         # Yes:
@@ -671,11 +710,10 @@ class Model(BaseModel):
         # Do we have a prior distribution p_0?
         if self.priorlogprobs is not None:
             log_p_dot += self.priorlogprobs
-        if not hasattr(self, 'logZ'):
+        if not hasattr(self, "logZ"):
             # Compute the norm constant (quickly!)
             self.logZ = logsumexp(log_p_dot)
         return log_p_dot - self.logZ
-
 
     def pmf(self):
         """Returns an array indexed by integers representing the values
@@ -708,7 +746,7 @@ class Model(BaseModel):
         as self.samplespace as a list or array.
         """
 
-        if hasattr(self, 'logZ'):
+        if hasattr(self, "logZ"):
             logZ = self.logZ
         else:
             logZ = self.lognormconst()
@@ -717,8 +755,10 @@ class Model(BaseModel):
             try:
                 f = self.f
             except AttributeError:
-                raise AttributeError("either pass a list f of feature"
-                           " functions or set this as a member variable self.f")
+                raise AttributeError(
+                    "either pass a list f of feature"
+                    " functions or set this as a member variable self.f"
+                )
 
         # Do we have a prior distribution p_0?
         priorlogpmf = None
@@ -734,10 +774,10 @@ class Model(BaseModel):
             # Do we have a prior distribution p_0?
             if priorlogpmf is not None:
                 priorlogprob_x = priorlogpmf(x)
-                return math.exp(np.dot(self.params, f_x) + priorlogprob_x \
-                                - logZ)
+                return math.exp(np.dot(self.params, f_x) + priorlogprob_x - logZ)
             else:
                 return math.exp(np.dot(self.params, f_x) - logZ)
+
         return p
 
 
@@ -795,6 +835,7 @@ class ConditionalModel(Model):
     where the expectation is as defined above.
 
     """
+
     def __init__(self, F, counts, numcontexts):
         """The F parameter should be a (sparse) m x size matrix, where m
         is the number of features and size is |W| * |X|, where |W| is the
@@ -826,13 +867,13 @@ class ConditionalModel(Model):
         self.F = F
         self.numcontexts = numcontexts
 
-        S = F.shape[1] // numcontexts          # number of sample point
+        S = F.shape[1] // numcontexts  # number of sample point
         assert isinstance(S, int)
 
         # Set the empirical pmf:  p_tilde(w, x) = N(w, x) / \sum_c \sum_y N(c, y).
         # This is always a rank-2 beast with only one row (to support either
         # arrays or dense/sparse matrices.
-        if not hasattr(counts, 'shape'):
+        if not hasattr(counts, "shape"):
             # Not an array or dense/sparse matrix
             p_tilde = asarray(counts).reshape(1, len(counts))
         else:
@@ -845,9 +886,11 @@ class ConditionalModel(Model):
                         # Try converting to a row vector
                         p_tilde = counts.reshape((1, counts.size))
                     except AttributeError:
-                        raise ValueError("the 'counts' object needs to be a"
+                        raise ValueError(
+                            "the 'counts' object needs to be a"
                             " row vector (1 x n) rank-2 array/matrix) or have"
-                            " a .reshape method to convert it into one")
+                            " a .reshape method to convert it into one"
+                        )
                 else:
                     p_tilde = counts
         # Make a copy -- don't modify 'counts'
@@ -858,7 +901,7 @@ class ConditionalModel(Model):
 
         self.p_tilde_context = np.empty(numcontexts, float)
         for w in range(numcontexts):
-            self.p_tilde_context[w] = self.p_tilde[0, w*S : (w+1)*S].sum()
+            self.p_tilde_context[w] = self.p_tilde[0, w * S : (w + 1) * S].sum()
 
         # Now compute the vector K = (K_i) of expectations of the
         # features with respect to the empirical distribution p_tilde(w, x).
@@ -870,7 +913,6 @@ class ConditionalModel(Model):
         self.K = flatten(innerprod(self.F, self.p_tilde.transpose()))
         self.numsamplepoints = S
 
-
     def lognormconst(self):
         """Compute the elementwise log of the normalization constant
         (partition function) Z(w)=sum_{y \in Y(w)} exp(theta . f(w, y)).
@@ -878,13 +920,13 @@ class ConditionalModel(Model):
         with one element for each context w.
         """
         # See if it's been precomputed
-        if hasattr(self, 'logZ'):
+        if hasattr(self, "logZ"):
             return self.logZ
 
         numcontexts = self.numcontexts
         S = self.numsamplepoints
         # Has F = {f_i(x_j)} been precomputed?
-        if not hasattr(self, 'F'):
+        if not hasattr(self, "F"):
             raise AttributeError("first create a feature matrix F")
 
         # Good, assume F has been precomputed
@@ -897,9 +939,8 @@ class ConditionalModel(Model):
 
         self.logZ = np.zeros(numcontexts, float)
         for w in range(numcontexts):
-            self.logZ[w] = logsumexp(log_p_dot[w*S: (w+1)*S])
+            self.logZ[w] = logsumexp(log_p_dot[w * S : (w + 1) * S])
         return self.logZ
-
 
     def dual(self, params=None, ignorepenalty=False):
         """The entropy dual function is defined for conditional models as
@@ -942,14 +983,14 @@ class ConditionalModel(Model):
 
         # Use a Gaussian prior for smoothing if requested.
         # This adds the penalty term \sum_{i=1}^m \theta_i^2 / {2 \sigma_i^2}
-        if self.sigma2 is not None and ignorepenalty==False:
+        if self.sigma2 is not None and ignorepenalty == False:
             penalty = 0.5 * (self.params**2 / self.sigma2).sum()
             L += penalty
             if self.verbose and self.external is None:
                 print("  regularized dual is ", L)
 
         if not self.callingback:
-            if hasattr(self, 'callback_dual'):
+            if hasattr(self, "callback_dual"):
                 # Prevent infinite recursion if the callback function calls
                 # dual():
                 self.callingback = True
@@ -960,14 +1001,12 @@ class ConditionalModel(Model):
         # (We don't reset params to its prior value.)
         return L
 
-
     # These do not need to be overridden:
     #     grad
     #     pmf
     #     probdist
 
-
-    def fit(self, algorithm='CG'):
+    def fit(self, algorithm="CG"):
         """Fits the conditional maximum entropy model subject to the
         constraints
 
@@ -980,14 +1019,13 @@ class ConditionalModel(Model):
         # Call base class method
         return model.fit(self, self.K, algorithm)
 
-
     def expectations(self):
         """The vector of expectations of the features with respect to the
         distribution p_tilde(w) p(x | w), where p_tilde(w) is the
         empirical probability mass function value stored as
         self.p_tilde_context[w].
         """
-        if not hasattr(self, 'F'):
+        if not hasattr(self, "F"):
             raise AttributeError("need a pre-computed feature matrix F")
 
         # A pre-computed matrix of features exists
@@ -999,7 +1037,7 @@ class ConditionalModel(Model):
         # multiply the appropriate elements by p_tilde(w) to get the hybrid pmf
         # required for conditional modelling:
         for w in range(numcontexts):
-            p[w*S : (w+1)*S] *= self.p_tilde_context[w]
+            p[w * S : (w + 1) * S] *= self.p_tilde_context[w]
 
         # Use the representation E_p[f(X)] = p . F
         return flatten(innerprod(self.F, p))
@@ -1007,7 +1045,6 @@ class ConditionalModel(Model):
         # # We only override to modify the documentation string.  The code
         # # is the same as for the model class.
         # return model.expectations(self)
-
 
     def logpmf(self):
         """Returns a (sparse) row vector of logarithms of the conditional
@@ -1017,7 +1054,7 @@ class ConditionalModel(Model):
         + x].
         """
         # Have the features already been computed and stored?
-        if not hasattr(self, 'F'):
+        if not hasattr(self, "F"):
             raise AttributeError("first set the feature matrix F")
 
         # p(x | c) = exp(theta.f(x, c)) / sum_c[exp theta.f(x, c)]
@@ -1029,14 +1066,14 @@ class ConditionalModel(Model):
         # Do we have a prior distribution p_0?
         if self.priorlogprobs is not None:
             log_p_dot += self.priorlogprobs
-        if not hasattr(self, 'logZ'):
+        if not hasattr(self, "logZ"):
             # Compute the norm constant (quickly!)
             self.logZ = np.zeros(numcontexts, float)
             for w in range(numcontexts):
-                self.logZ[w] = logsumexp(log_p_dot[w*S : (w+1)*S])
+                self.logZ[w] = logsumexp(log_p_dot[w * S : (w + 1) * S])
         # Renormalize
         for w in range(numcontexts):
-            log_p_dot[w*S : (w+1)*S] -= self.logZ[w]
+            log_p_dot[w * S : (w + 1) * S] -= self.logZ[w]
         return log_p_dot
 
 
@@ -1067,7 +1104,7 @@ class BigModel(BaseModel):
         self.matrixtrials = 1
 
         # Store the lowest dual estimate observed so far in the fitting process
-        self.bestdual = float('inf')
+        self.bestdual = float("inf")
 
         # Most of the attributes below affect only the stochastic
         # approximation procedure.  They should perhaps be removed, and made
@@ -1110,19 +1147,17 @@ class BigModel(BaseModel):
         self.testevery = None
         # self.printevery = 1000
 
-
     def resample(self):
-        """(Re)samples the matrix F of sample features.
-        """
+        """(Re)samples the matrix F of sample features."""
 
         if self.verbose >= 3:
             print("(sampling)")
 
         # First delete the existing sample matrix to save memory
         # This matters, since these can be very large
-        for var in ['sampleF, samplelogprobs, sample']:
+        for var in ["sampleF, samplelogprobs, sample"]:
             if hasattr(self, var):
-                exec('del self.' + var)
+                exec("del self." + var)
 
         # Now generate a new sample
         output = next(self.sampleFgen)
@@ -1150,8 +1185,10 @@ class BigModel(BaseModel):
             self.reset(m)
         else:
             if self.sampleF.shape[0] != m:
-                raise ValueError("the sample feature generator returned"
-                                  " a feature matrix of incorrect dimensions")
+                raise ValueError(
+                    "the sample feature generator returned"
+                    " a feature matrix of incorrect dimensions"
+                )
         if self.verbose >= 3:
             print("(done)")
 
@@ -1159,13 +1196,12 @@ class BigModel(BaseModel):
         # sample
         self.clearcache()
 
-
     def lognormconst(self):
         """Estimate the normalization constant (partition function) using
         the current sample matrix F.
         """
         # First see whether logZ has been precomputed
-        if hasattr(self, 'logZapprox'):
+        if hasattr(self, "logZapprox"):
             return self.logZapprox
 
         # Compute log v = log [p_dot(s_j)/aux_dist(s_j)]   for
@@ -1178,7 +1214,6 @@ class BigModel(BaseModel):
         self.logZapprox = logsumexp(logv) - math.log(n)
         return self.logZapprox
 
-
     def expectations(self):
         """Estimates the feature expectations E_p[f(X)] under the current
         model p = p_theta using the given sample feature matrix.  If
@@ -1188,7 +1223,7 @@ class BigModel(BaseModel):
         the generator function supplied to sampleFgen().
         """
         # See if already computed
-        if hasattr(self, 'mu'):
+        if hasattr(self, "mu"):
             return self.mu
         self.estimate()
         return self.mu
@@ -1205,7 +1240,7 @@ class BigModel(BaseModel):
         unnormalized pdf value of the point x_j under the current model.
         """
         # First see whether logv has been precomputed
-        if hasattr(self, 'logv'):
+        if hasattr(self, "logv"):
             return self.logv
 
         # Compute log v = log [p_dot(s_j)/aux_dist(s_j)]   for
@@ -1230,7 +1265,6 @@ class BigModel(BaseModel):
         # Good, we have our logv.  Now:
         self.logv = logv
         return logv
-
 
     def estimate(self):
         """This function approximates both the feature expectation vector
@@ -1311,19 +1345,18 @@ class BigModel(BaseModel):
             if self.external is None:
                 averages = innerprod(self.sampleF, arrayexp(logu))
             else:
-                averages = innerprod(self.externalFs[self.external], \
-                                     arrayexp(logu))
+                averages = innerprod(self.externalFs[self.external], arrayexp(logu))
             averages /= n
             mus.append(averages)
 
         # Now we have T=trials vectors of the sample means.  If trials > 1,
         # estimate st dev of means and confidence intervals
-        ttrials = len(mus)   # total number of trials performed
+        ttrials = len(mus)  # total number of trials performed
         if ttrials == 1:
             self.mu = mus[0]
             self.logZapprox = logZs[0]
             try:
-                del self.varE       # make explicit that this has no meaning
+                del self.varE  # make explicit that this has no meaning
             except AttributeError:
                 pass
             return
@@ -1337,7 +1370,6 @@ class BigModel(BaseModel):
             self.varE = columnvariances(mus)
             self.mu = columnmeans(mus)
             return
-
 
     def setsampleFgen(self, sampler, staticsample=True):
         """Initializes the Monte Carlo sampler to use the supplied
@@ -1406,7 +1438,6 @@ class BigModel(BaseModel):
         if staticsample:
             self.resample()
 
-
     def pdf(self, fx):
         """Returns the estimated density p_theta(x) at the point x with
         feature statistic fx = f(x).  This is defined as
@@ -1426,8 +1457,8 @@ class BigModel(BaseModel):
 
         def p(fx):
             return np.exp(innerprodtranspose(fx, self.params) - log_Z_est)
-        return p
 
+        return p
 
     def logpdf(self, fx, log_prior_x=None):
         """Returns the log of the estimated density p(x) = p_theta(x) at
@@ -1459,7 +1490,6 @@ class BigModel(BaseModel):
             logpdf += log_prior_x
         return logpdf
 
-
     def stochapprox(self, K):
         """Tries to fit the model to the feature expectations K using
         stochastic approximation, with the Robbins-Monro stochastic
@@ -1477,7 +1507,7 @@ class BigModel(BaseModel):
         # If we have resumed fitting, adopt the previous parameter k
         try:
             k = self.paramslogcounter
-            #k = (self.paramslog-1)*self.paramslogfreq
+            # k = (self.paramslog-1)*self.paramslogfreq
         except:
             k = 0
 
@@ -1495,14 +1525,14 @@ class BigModel(BaseModel):
             if k > self.a_0_hold:
                 if not self.deylon:
                     n = k - self.a_0_hold
-                elif k <= 2 + self.a_0_hold:   # why <= 2?
+                elif k <= 2 + self.a_0_hold:  # why <= 2?
                     # Initialize n for the first non-held iteration
                     n = k - self.a_0_hold
                 else:
                     # Use Kersten-Deylon accelerated SA, based on the rate of
                     # changes of sign of the gradient.  (If frequent swaps, the
                     # stepsize is too large.)
-                    #n += (np.dot(y_k, y_kminus1) < 0)   # an indicator fn
+                    # n += (np.dot(y_k, y_kminus1) < 0)   # an indicator fn
                     if np.dot(y_k, y_kminus1) < 0:
                         n += 1
                     else:
@@ -1514,7 +1544,13 @@ class BigModel(BaseModel):
                             self.nosignswitch = [k]
                         print("No sign switch at iteration " + str(k))
                     if self.verbose >= 2:
-                        print("(using Deylon acceleration.  n is " + str(n) + " instead of " + str(k - self.a_0_hold) + "...)")
+                        print(
+                            "(using Deylon acceleration.  n is "
+                            + str(n)
+                            + " instead of "
+                            + str(k - self.a_0_hold)
+                            + "...)"
+                        )
                 if self.ruppertaverage:
                     if self.stepdecreaserate is None:
                         # Use log n / n as the default.  Note: this requires a
@@ -1525,38 +1561,39 @@ class BigModel(BaseModel):
                         # I think that with Ruppert averaging, we need a
                         # stepsize decreasing as n^(-p), where p is in the open
                         # interval (0.5, 1) for almost sure convergence.
-                        a_k = 1.0 * self.a_0 / (n ** self.stepdecreaserate)
+                        a_k = 1.0 * self.a_0 / (n**self.stepdecreaserate)
                 else:
                     # I think we need a stepsize decreasing as n^-1 for almost
                     # sure convergence
-                    a_k = 1.0 * self.a_0 / (n ** self.stepdecreaserate)
+                    a_k = 1.0 * self.a_0 / (n**self.stepdecreaserate)
             # otherwise leave step size unchanged
             if self.verbose:
                 print("  step size is: " + str(a_k))
 
             self.matrixtrials = 1
             self.staticsample = False
-            if self.andradottir:    # use Andradottir (1996)'s scaling?
-                self.estimate()   # resample and reestimate
+            if self.andradottir:  # use Andradottir (1996)'s scaling?
+                self.estimate()  # resample and reestimate
                 y_k_1 = self.mu - K
-                self.estimate()   # resample and reestimate
+                self.estimate()  # resample and reestimate
                 y_k_2 = self.mu - K
-                y_k = y_k_1 / max(1.0, norm(y_k_2)) + \
-                      y_k_2 / max(1.0, norm(y_k_1))
+                y_k = y_k_1 / max(1.0, norm(y_k_2)) + y_k_2 / max(1.0, norm(y_k_1))
             else:
                 # Standard Robbins-Monro estimator
                 if not self.staticsample:
-                    self.estimate()   # resample and reestimate
+                    self.estimate()  # resample and reestimate
                 try:
-                    y_kminus1 = y_k    # store this for the Deylon acceleration
+                    y_kminus1 = y_k  # store this for the Deylon acceleration
                 except NameError:
-                    pass               # if we're on iteration k=1, ignore this
+                    pass  # if we're on iteration k=1, ignore this
                 y_k = self.mu - K
             norm_y_k = norm(y_k)
             if self.verbose:
                 print("SA: after iteration " + str(k))
-                print("  approx dual fn is: " + str(self.logZapprox \
-                            - np.dot(self.params, K)))
+                print(
+                    "  approx dual fn is: "
+                    + str(self.logZapprox - np.dot(self.params, K))
+                )
                 print("  norm(mu_est - k) = " + str(norm_y_k))
 
             # Update params (after the convergence tests too ... don't waste the
@@ -1564,20 +1601,21 @@ class BigModel(BaseModel):
             if self.ruppertaverage:
                 # Use a simple average of all estimates so far, which
                 # Ruppert and Polyak show can converge more rapidly
-                newparams = self.params - a_k*y_k
-                avgparams = (k-1.0)/k*avgparams + 1.0/k * newparams
+                newparams = self.params - a_k * y_k
+                avgparams = (k - 1.0) / k * avgparams + 1.0 / k * newparams
                 if self.verbose:
                     print("  new params[0:5] are: " + str(avgparams[0:5]))
                 self.setparams(avgparams)
             else:
                 # Use the standard Robbins-Monro estimator
-                self.setparams(self.params - a_k*y_k)
+                self.setparams(self.params - a_k * y_k)
 
             if k >= self.maxiter:
-                print("Reached maximum # iterations during stochastic" \
-                        " approximation without convergence.")
+                print(
+                    "Reached maximum # iterations during stochastic"
+                    " approximation without convergence."
+                )
                 break
-
 
     def settestsamples(self, F_list, logprob_list, testevery=1, priorlogprob_list=None):
         """Requests that the model be tested every 'testevery' iterations
@@ -1619,7 +1657,6 @@ class BigModel(BaseModel):
         self.external_duals = {}
         self.external_gradnorms = {}
 
-
     def test(self):
         """Estimate the dual and gradient on the external samples,
         keeping track of the parameters that yield the minimum such dual.
@@ -1648,17 +1685,21 @@ class BigModel(BaseModel):
         self.external = None
         self.clearcache()
 
-        meandual = np.average(dualapprox,axis=0)
+        meandual = np.average(dualapprox, axis=0)
         self.external_duals[self.iters] = dualapprox
         self.external_gradnorms[self.iters] = gradnorms
 
         if self.verbose:
-            print("** Mean (unregularized) dual estimate from the %d" \
-                  " external samples is %f" % \
-                 (len(self.externalFs), meandual))
-            print("** Mean mean square error of the (unregularized) feature" \
-                    " expectation estimates from the external samples =" \
-                    " mean(|| \hat{\mu_e} - k ||,axis=0) =", np.average(gradnorms,axis=0))
+            print(
+                "** Mean (unregularized) dual estimate from the %d"
+                " external samples is %f" % (len(self.externalFs), meandual)
+            )
+            print(
+                "** Mean mean square error of the (unregularized) feature"
+                " expectation estimates from the external samples ="
+                " mean(|| \hat{\mu_e} - k ||,axis=0) =",
+                np.average(gradnorms, axis=0),
+            )
         # Track the parameter vector params with the lowest mean dual estimate
         # so far:
         if meandual < self.bestdual:
@@ -1674,7 +1715,9 @@ bigmodel = BigModel
 
 def _test():
     import doctest
+
     doctest.testmod()
+
 
 if __name__ == "__main__":
     _test()
