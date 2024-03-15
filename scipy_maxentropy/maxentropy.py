@@ -340,7 +340,7 @@ class basemodel(object):
 
         # Do we perform a test on external sample(s) every iteration?
         # Only relevant to bigmodel objects
-        if hasattr(self, 'testevery') and self.testevery > 0:
+        if hasattr(self, 'testevery') and self.testevery is not None and self.testevery > 0:
             if (self.iters + 1) % self.testevery != 0:
                 if self.verbose:
                     print("Skipping test on external sample(s) ...")

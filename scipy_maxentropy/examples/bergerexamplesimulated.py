@@ -21,17 +21,15 @@
     shows the steps one would take to fit a model on a continuous or
     large discrete sample space.
 """
-from __future__ import print_function
 
-from builtins import str
-from builtins import range
 __author__  =  'Ed Schofield'
 __version__ =  '2.1'
 
 
 import sys
 import scipy_maxentropy as maxentropy
-# from scipy.sandbox import montecarlo
+import scipy_maxentropy.maxentutils as utils
+
 
 try:
     algorithm = sys.argv[1]
@@ -55,7 +53,7 @@ def f2(x):
 
 f = [f0, f1, f2]
 
-model = maxentropy.bigmodel()
+model = maxentropy.BigModel()
 
 # Now set the desired feature expectations
 K = [1.0, 0.3, 0.5]
@@ -65,24 +63,39 @@ samplefreq = {}
 for e in samplespace:
     samplefreq[e] = 1
 
-sampler = montecarlo.dictsampler(samplefreq)
-
 n = 10**4
 m = 3
 
-# Now create a generator of features of random points
+sampler = utils.dictsampler(samplefreq, size=n)
 
-SPARSEFORMAT = 'csc_matrix'
-# Could also specify 'csr_matrix', 'dok_matrix', or (PySparse's) 'll_mat'
+# Now create a generator of features of random points:
+def sampleFgen(sampler, f, sparse_format='csc_matrix'):
+    """
+    A generator function that yields features of random points.
 
-def sampleFgen(sampler, f, n):
+    Parameters
+    ----------
+        sampler: a generator that yields tuples (xs, logprobs)
+
+        f: a list of feature functions to apply to the values x in xs
+
+        sparse_format: either 'csc_matrix', 'csr_matrix' etc.
+                       for constructing a scipy.sparse matrix of features
+
+    Yields
+    ------
+        a tuple (F, logprobs), where:
+            - F is a sparse feature matrix
+            - logprobs is the same vector of log probs yielded by sampler
+    """
     while True:
-        xs, logprobs = sampler.sample(n, return_probs=2)
-        F = maxentropy.sparsefeaturematrix(f, xs, SPARSEFORMAT)
+        xs, logprobs = next(sampler)
+        F = maxentropy.sparsefeaturematrix(f, xs, sparse_format)
         yield F, logprobs
 
+
 print("Generating an initial sample ...")
-model.setsampleFgen(sampleFgen(sampler, f, n))
+model.setsampleFgen(sampleFgen(sampler, f))
 
 model.verbose = True
 
@@ -98,20 +111,19 @@ print("\nFitted distribution is:")
 p = smallmodel.probdist()
 for j in range(len(smallmodel.samplespace)):
     x = smallmodel.samplespace[j]
-    print(("\tx = %-15s" %(x + ":",) + " p(x) = "+str(p[j])).encode('utf-8'))
+    print(("\tx = %-15s" %(x + ":",) + " p(x) = "+str(p[j])))
 
 
 # Now show how well the constraints are satisfied:
 print()
 print("Desired constraints:")
 print("\tp['dans'] + p['en'] = 0.3")
-print(("\tp['dans'] + p['" + a_grave + "']  = 0.5").encode('utf-8'))
+print("\tp['dans'] + p['" + a_grave + "']  = 0.5")
 print()
 print("Actual expectations under the fitted model:")
 print("\tp['dans'] + p['en'] =", p[0] + p[1])
-print(("\tp['dans'] + p['" + a_grave + "']  = " + \
-        str(p[0]+p[2])).encode('utf-8'))
-# (Or substitute "x.encode('latin-1')" if you have a primitive terminal.)
+print("\tp['dans'] + p['" + a_grave + "']  = " + \
+        str(p[0]+p[2]))
 
 print("\nEstimated error in constraint satisfaction (should be close to 0):\n" \
         + str(abs(model.expectations() - K)))

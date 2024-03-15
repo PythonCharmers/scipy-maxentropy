@@ -126,8 +126,8 @@ def dictsample(freq, size=(), return_probs='logprob'):
 
 def dictsampler(freq, size=(), return_probs='logprob'):
     """
-    A generator of samples of the given size from the specified discrete
-    distribution.
+    A generator function that yields samples of the given size from the
+    specified discrete distribution.
 
     Parameters
     ----------
@@ -153,7 +153,7 @@ def dictsampler(freq, size=(), return_probs='logprob'):
     Example
     -------
     >>> freq = {'a': 10, 'b': 15, 'c': 20}
-    >>> g = dictsample_gen(freq, size=10)
+    >>> g = dictsampler(freq, size=10)
     >>> next(g)
     array([c, b, b, b, b, b, c, b, b, b], dtype=object)
     """
