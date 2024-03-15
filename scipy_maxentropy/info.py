@@ -76,10 +76,9 @@ routines when the sample space is small enough to be enumerated.
 See bergerexamplesimulated.py for a a similar walk-through using
 simulation.
 
+Copyright: Ed Schofield, 2024
+License: BSD-style (see LICENSE.md)
 """
-
-# Copyright: Ed Schofield, 2003-2006
-# License: BSD-style (see LICENSE.txt in main source directory)
 
 postpone_import = 1
 depends = ["optimize"]

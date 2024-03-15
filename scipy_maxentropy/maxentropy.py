@@ -1,20 +1,17 @@
 """
-This module contains the former scipy.maxentropy code.
+Routines for fitting maximum entropy models.
 
-Scipy.maxentropy was in turn an adaptation of "ftwmaxent" by Ed Schofield,
+This module was previously available as scipy.maxentropy.
+
+The code in SciPy was in turn an adaptation of "ftwmaxent" by Ed Schofield,
 first posted on SourceForge as part of the "textmodeller" project in 2002.
+
+Copyright: Ed Schofield, 2024
+Licence: BSD-style (see LICENSE.md)
 """
 
-# maxentropy.py: Routines for fitting maximum entropy models.
-
-# Copyright: Ed Schofield, 2003-2006
-# License: BSD-style (see LICENSE.txt in main source directory)
-
-# Future imports must come before any code in 2.5
-from __future__ import division
-
 __author__ = "Ed Schofield"
-__version__ = "0.4.0"
+__version__ = "1.0"
 
 
 import math, types, pickle

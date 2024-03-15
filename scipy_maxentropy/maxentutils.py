@@ -9,13 +9,12 @@ common interface.
 Perhaps the logsumexp() function belongs under the utils/ branch where other
 modules can access it more easily.
 
-Copyright: Ed Schofield, 2003-2006
-License: BSD-style (see LICENSE.txt in main source directory)
+Copyright: Ed Schofield, 2024
+License: BSD-style (see LICENSE.md)
 
 """
 
 __author__ = "Ed Schofield"
-__version__ = "0.4.0"
 
 import random
 import math

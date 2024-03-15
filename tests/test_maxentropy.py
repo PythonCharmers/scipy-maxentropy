@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
-"""Test functions for maximum entropy module.
-
-Author: Ed Schofield, 2003-2005
-Copyright: Ed Schofield, 2003-2005
+"""
+Test functions for maximum entropy module.
 """
 
 from numpy.testing import assert_almost_equal, TestCase, run_module_suite

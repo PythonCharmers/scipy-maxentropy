@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "scipy-maxentropy"
-version = "0.4.0"
+version = "1.0"
 description = "Maximum entropy modelling code previously available as scipy.maxentropy"
 authors = ["Ed Schofield <ed@pythoncharmers.com>"]
 license = "BSD"
