@@ -28,7 +28,7 @@ from .maxentutils import arrayexp, \
         flatten, DivergenceError, sparsefeaturematrix
 
 
-class basemodel(object):
+class BaseModel(object):
     """A base class providing generic functionality for both small and
     large maximum entropy models.  Cannot be instantiated.
     """
@@ -97,7 +97,7 @@ class basemodel(object):
 
         For 'model' instances, expectations are computed exactly, by summing
         over the given sample space.  If the sample space is continuous or too
-        large to iterate over, use the 'bigmodel' class instead.
+        large to iterate over, use the 'BigModel' class instead.
 
         For 'bigmodel' instances, the model expectations are not computed
         exactly (by summing or integrating over a sample space) but
@@ -581,15 +581,17 @@ class basemodel(object):
         del self.paramslogfreq
 
 
+# Compatibility with SciPy <= v0.10.1:
+basemodel = BaseModel
 
 
 
-class model(basemodel):
+class Model(BaseModel):
     """A maximum-entropy (exponential-form) model on a discrete sample
     space.
     """
     def __init__(self, f=None, samplespace=None):
-        super(model, self).__init__()
+        super(Model, self).__init__()
 
         if f is not None and samplespace is not None:
             self.setfeaturesandsamplespace(f, samplespace)
@@ -739,7 +741,11 @@ class model(basemodel):
         return p
 
 
-class conditionalmodel(model):
+# Compatibility with SciPy <= v0.10.1:
+model = Model
+
+
+class ConditionalModel(Model):
     """
     A conditional maximum-entropy (exponential-form) model p(x|w) on a
     discrete sample space.
@@ -813,10 +819,10 @@ class conditionalmodel(model):
         # efficient internally with one long row vector.  What we really need is
         # for sparse matrices to offer a .reshape method so this conversion
         # could be done internally and transparently.  Then the numcontexts
-        # argument to the conditionalmodel constructor could also be inferred
+        # argument to the ConditionalModel constructor could also be inferred
         # from the matrix dimensions.
 
-        super(conditionalmodel, self).__init__()
+        super(ConditionalModel, self).__init__()
         self.F = F
         self.numcontexts = numcontexts
 
@@ -1034,7 +1040,11 @@ class conditionalmodel(model):
         return log_p_dot
 
 
-class bigmodel(basemodel):
+# Compatibility with SciPy <= v0.10.1:
+conditionalmodel = ConditionalModel
+
+
+class BigModel(BaseModel):
     """A maximum-entropy (exponential-form) model on a large sample
     space.
 
@@ -1051,7 +1061,7 @@ class bigmodel(basemodel):
     """
 
     def __init__(self):
-        super(bigmodel, self).__init__()
+        super(BigModel, self).__init__()
 
         # Number of sample matrices to generate and use to estimate E and logZ
         self.matrixtrials = 1
@@ -1656,6 +1666,10 @@ class bigmodel(basemodel):
             self.bestparams = self.params
             if self.verbose:
                 print("\n\t\t\tStored new minimum entropy dual: %f\n" % meandual)
+
+
+# Compatibility with SciPy <= v0.10.1:
+bigmodel = BigModel
 
 
 def _test():
