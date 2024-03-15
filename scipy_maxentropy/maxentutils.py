@@ -227,7 +227,7 @@ def robustlog(x):
 def _robustarraylog(x):
     """ An array version of robustlog.  Operates on a real array x.
     """
-    arraylog = empty(len(x), numpy.complex64)
+    arraylog = empty(len(x), np.complex64)
     for i in range(len(x)):
         xi = x[i]
         if xi > 0:
@@ -252,19 +252,19 @@ def arrayexp(x):
     """
     Returns the elementwise antilog of the real array x.
 
-    We try to exponentiate with numpy.exp() and, if that fails, with
-    python's math.exp().  numpy.exp() is about 10 times faster but throws
+    We try to exponentiate with np.exp() and, if that fails, with
+    python's math.exp().  np.exp() is about 10 times faster but throws
     an OverflowError exception for numerical underflow (e.g. exp(-800),
     whereas python's math.exp() just returns zero, which is much more
     helpful.
 
     """
     try:
-        ex = numpy.exp(x)
+        ex = np.exp(x)
     except OverflowError:
-        print("Warning: OverflowError using numpy.exp(). Using slower Python"\
+        print("Warning: OverflowError using np.exp(). Using slower Python"\
               " routines instead!")
-        ex = numpy.empty(len(x), float)
+        ex = np.empty(len(x), float)
         for j in range(len(x)):
             ex[j] = math.exp(x[j])
     return ex
@@ -273,17 +273,17 @@ def arrayexpcomplex(x):
     """
     Returns the elementwise antilog of the vector x.
 
-    We try to exponentiate with numpy.exp() and, if that fails, with python's
-    math.exp().  numpy.exp() is about 10 times faster but throws an
+    We try to exponentiate with np.exp() and, if that fails, with python's
+    math.exp().  np.exp() is about 10 times faster but throws an
     OverflowError exception for numerical underflow (e.g. exp(-800),
     whereas python's math.exp() just returns zero, which is much more
     helpful.
 
     """
     try:
-        ex = numpy.exp(x).real
+        ex = np.exp(x).real
     except OverflowError:
-        ex = numpy.empty(len(x), float)
+        ex = np.empty(len(x), float)
         try:
             for j in range(len(x)):
                 ex[j] = math.exp(x[j])
@@ -309,7 +309,7 @@ def densefeatures(f, x):
     in the list f at the point x.
     """
 
-    return numpy.array([fi(x) for fi in f])
+    return np.array([fi(x) for fi in f])
 
 def densefeaturematrix(f, sample):
     """Returns an (m x n) dense array of non-zero evaluations of the
@@ -317,12 +317,12 @@ def densefeaturematrix(f, sample):
     list sample.
     """
 
-    # Was: return numpy.array([[fi(x) for fi in f] for x in sample])
+    # Was: return np.array([[fi(x) for fi in f] for x in sample])
 
     m = len(f)
     n = len(sample)
 
-    F = numpy.empty((m, n), float)
+    F = np.empty((m, n), float)
     for i in range(m):
         f_i = f[i]
         for j in range(n):
@@ -421,12 +421,12 @@ def dotprod(u,v):
     #print "v = " + str(v)
 
     try:
-        dotprod = numpy.array([0.0])  # a 1x1 array.  Required by spmatrix.
+        dotprod = np.array([0.0])  # a 1x1 array.  Required by spmatrix.
         u.matvec(v, dotprod)
         return dotprod[0]               # extract the scalar
     except AttributeError:
         # Assume u is a dense array.
-        return numpy.dot(u,v)
+        return np.dot(u,v)
 
 
 
@@ -451,20 +451,20 @@ def innerprodtranspose(A,v):
         return (A.conj().transpose() * v).transpose()
     else:
         # Assume A is dense
-        if isinstance(v, numpy.ndarray):
+        if isinstance(v, np.ndarray):
             # v is also dense
             if len(v.shape) == 1:
                 # We can't transpose a rank-1 matrix into a row vector, so
                 # we reshape it.
                 vm = v.shape[0]
-                vcolumn = numpy.reshape(v, (1, vm))
-                x = numpy.dot(vcolumn, A)
-                return numpy.reshape(x, (n,))
+                vcolumn = np.reshape(v, (1, vm))
+                x = np.dot(vcolumn, A)
+                return np.reshape(x, (n,))
             else:
                 #(vm, vn) = v.shape
                 # Assume vm == m
-                x = numpy.dot(numpy.transpose(v), A)
-                return numpy.transpose(x)
+                x = np.dot(np.transpose(v), A)
+                return np.transpose(x)
         else:
             raise TypeError("unsupported types for inner product")
 
@@ -479,12 +479,12 @@ def rowmeans(A):
     Returns a dense (m x 1) vector representing the mean of the rows of A,
     which be an (m x n) sparse or dense matrix.
 
-    >>> a = numpy.array([[1,2],[3,4]], float)
+    >>> a = np.array([[1,2],[3,4]], float)
     >>> rowmeans(a)
     array([ 1.5,  3.5])
 
     """
-    if type(A) is numpy.ndarray:
+    if type(A) is np.ndarray:
         return A.mean(1)
     else:
         # Assume it's sparse
@@ -493,7 +493,7 @@ def rowmeans(A):
         except AttributeError:
             raise TypeError("rowmeans() only works with sparse and dense "
                             "arrays")
-        rowsum = innerprod(A, numpy.ones(n, float))
+        rowsum = innerprod(A, np.ones(n, float))
         return rowsum / float(n)
 
 def columnmeans(A):
@@ -506,12 +506,12 @@ def columnmeans(A):
     Returns a dense (1 x n) vector with the column averages of A, which can
     be an (m x n) sparse or dense matrix.
 
-    >>> a = numpy.array([[1,2],[3,4]],'d')
+    >>> a = np.array([[1,2],[3,4]],'d')
     >>> columnmeans(a)
     array([ 2.,  3.])
 
     """
-    if type(A) is numpy.ndarray:
+    if type(A) is np.ndarray:
         return A.mean(0)
     else:
         # Assume it's sparse
@@ -520,7 +520,7 @@ def columnmeans(A):
         except AttributeError:
             raise TypeError("columnmeans() only works with sparse and dense "
                             "arrays")
-        columnsum = innerprodtranspose(A, numpy.ones(m, float))
+        columnsum = innerprodtranspose(A, np.ones(m, float))
         return columnsum / float(m)
 
 def columnvariances(A):
@@ -534,13 +534,13 @@ def columnvariances(A):
     variances for each column of the (m x n) sparse or dense matrix A.  (The
     normalization is by (m - 1).)
 
-    >>> a = numpy.array([[1,2], [3,4]], 'd')
+    >>> a = np.array([[1,2], [3,4]], 'd')
     >>> columnvariances(a)
     array([ 2.,  2.])
 
     """
-    if type(A) is numpy.ndarray:
-        return numpy.std(A,0)**2
+    if type(A) is np.ndarray:
+        return np.std(A,0)**2
     else:
         try:
             m = A.shape[0]
@@ -557,7 +557,7 @@ def flatten(a):
     if sparse.isspmatrix(a):
         return a.A.flatten()
     else:
-        return numpy.asarray(a).flatten()
+        return np.asarray(a).flatten()
 
 class DivergenceError(Exception):
     """Exception raised if the entropy dual has no finite minimum.
