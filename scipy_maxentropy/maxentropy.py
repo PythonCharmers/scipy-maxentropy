@@ -32,7 +32,7 @@ from .maxentutils import (
 )
 
 
-class BaseModel(object):
+class BaseModel:
     """A base class providing generic functionality for both small and
     large maximum entropy models.  Cannot be instantiated.
     """
@@ -57,7 +57,7 @@ class BaseModel(object):
         self.maxfun = 1500
         self.mindual = -100.0  # The entropy dual must actually be
         # non-negative, but the estimate may be
-        # slightly out with bigmodel instances
+        # slightly out with BigModel instances
         # without implying divergence to -inf
         self.callingback = False
         self.iters = 0  # the number of iterations so far of the
@@ -77,7 +77,7 @@ class BaseModel(object):
         # Do we seek to minimize the KL divergence between the model and a
         # prior density p_0?  If not, set this to None; then we maximize the
         # entropy.  If so, set this to an array of the log probability densities
-        # p_0(x) for each x in the sample space.  For bigmodel objects, set this
+        # p_0(x) for each x in the sample space.  For BigModel objects, set this
         # to an array of the log probability densities p_0(x) for each x in the
         # random sample from the auxiliary distribution.
         self.priorlogprobs = None
@@ -85,7 +85,7 @@ class BaseModel(object):
         # By default, use the sample matrix sampleF to estimate the
         # entropy dual and its gradient.  Otherwise, set self.external to
         # the index of the sample feature matrix in the list self.externalFs.
-        # This applies to 'bigmodel' objects only, but setting this here
+        # This applies to 'BigModel' objects only, but setting this here
         # simplifies the code in dual() and grad().
         self.external = None
         self.externalpriorlogprobs = None
@@ -102,7 +102,7 @@ class BaseModel(object):
         over the given sample space.  If the sample space is continuous or too
         large to iterate over, use the 'BigModel' class instead.
 
-        For 'bigmodel' instances, the model expectations are not computed
+        For 'BigModel' instances, the model expectations are not computed
         exactly (by summing or integrating over a sample space) but
         approximately (by Monte Carlo simulation).  Simulation is necessary
         when the sample space is too large to sum or integrate over in
@@ -137,7 +137,7 @@ class BaseModel(object):
         dual = self.dual
         grad = self.grad
 
-        if isinstance(self, bigmodel):
+        if isinstance(self, BigModel):
             # Ensure the sample matrix has been set
             if not hasattr(self, "sampleF") and hasattr(self, "samplelogprobs"):
                 raise AttributeError(
@@ -285,7 +285,7 @@ class BaseModel(object):
         This function is computed as:
             L(theta) = log(Z) - theta^T . K
 
-        For 'bigmodel' objects, it estimates the entropy dual without
+        For 'BigModel' objects, it estimates the entropy dual without
         actually computing p_theta.  This is important if the sample
         space is continuous or innumerable in practice.  We approximate
         the norm constant Z using importance sampling as in
@@ -298,7 +298,7 @@ class BaseModel(object):
         convergence guarantees break down for most optimization
         algorithms in the presence of stochastic error.
 
-        Note that, for 'bigmodel' objects, the dual estimate is
+        Note that, for 'BigModel' objects, the dual estimate is
         deterministic for any given sample.  It is given as:
 
             L_est = log Z_est - sum_i{theta_i K_i}
@@ -357,7 +357,7 @@ class BaseModel(object):
         process.  It calls the user-supplied callback function (if any),
         logs the evolution of the entropy dual and gradient norm, and
         checks whether the process appears to be diverging, which would
-        indicate inconsistent constraints (or, for bigmodel instances,
+        indicate inconsistent constraints (or, for BigModel instances,
         too large a variance in the estimates).
         """
 
@@ -381,7 +381,7 @@ class BaseModel(object):
                 self.callingback = False
 
         # Do we perform a test on external sample(s) every iteration?
-        # Only relevant to bigmodel objects
+        # Only relevant to BigModel objects
         if (
             hasattr(self, "testevery")
             and self.testevery is not None
@@ -474,7 +474,7 @@ class BaseModel(object):
         if so, this will result in numerical overflow.  In this case use
         lognormconst() instead.
 
-        For 'bigmodel' instances, estimates the normalization term as
+        For 'BigModel' instances, estimates the normalization term as
         Z = E_aux_dist [{exp (params.f(X))} / aux_dist(X)] using a sample
         from aux_dist.
         """
