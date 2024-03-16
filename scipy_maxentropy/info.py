@@ -1,13 +1,16 @@
 """
 ================================================
-Maximum entropy models (:mod:`scipy.maxentropy`)
+Maximum entropy models (:mod:`scipy_maxentropy`)
 ================================================
 
-.. currentmodule:: scipy.maxentropy
+.. currentmodule:: scipy_maxentropy
 
-.. warning:: This module is deprecated in scipy 0.10, and will be removed in
-             0.11. Do not use this module in your new code. For questions about
-             this deprecation, please ask on the scipy-dev mailing list.
+This module was in SciPy up to version 0.10.1. It was then removed in SciPy 0.11.
+It is now available as a package `scipy_maxentropy` on PyPI for backward
+compatibility.
+
+For new projects, consider the `maxentropy` package instead, which offers a
+more modern scikit-learn compatible API.
 
 Package content
 ===============
