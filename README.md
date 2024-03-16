@@ -1,8 +1,8 @@
 # scipy-maxentropy: maximum entropy models
 
 This is the former `scipy.maxentropy` package that was available in SciPy up to
-version 0.10.1. It was then removed in SciPy 0.11.  It is now available as a
-separate package on PyPI for backward compatibility.
+version 0.10.1. It was under-maintained and later removed in SciPy 0.11. It is
+now available as this separate package for backward compatibility.
 
 For new projects, consider the
 [maxentropy](https://github.com/PythonCharmers/maxentropy) package instead,
@@ -52,12 +52,12 @@ f = [f0, f1, f2]
 model = Model(f, samplespace)
 
 # Now set the desired feature expectations
-K = [1.0, 0.3, 0.5]
+b = [1.0, 0.3, 0.5]
 
 model.verbose = False    # set to True to show optimization progress
 
 # Fit the model
-model.fit(K)
+model.fit(b)
 
 # Output the distribution
 print()
