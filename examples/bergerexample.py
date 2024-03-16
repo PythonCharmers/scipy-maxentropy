@@ -16,48 +16,54 @@
     This code finds the probability distribution with maximal entropy
     subject to these constraints.
 """
-import scipy_maxentropy as maxentropy
 
-a_grave = u'\u00e0'
+from scipy_maxentropy import Model  # previously scipy.maxentropy
 
-samplespace = ['dans', 'en', a_grave, 'au cours de', 'pendant']
+samplespace = ["dans", "en", "à", "au cours de", "pendant"]
+
 
 def f0(x):
     return x in samplespace
 
+
 def f1(x):
-    return x=='dans' or x=='en'
+    return x == "dans" or x == "en"
+
 
 def f2(x):
-    return x=='dans' or x==a_grave
+    return x == "dans" or x == "à"
+
 
 f = [f0, f1, f2]
 
-model = maxentropy.model(f, samplespace)
+model = Model(f, samplespace)
 
 # Now set the desired feature expectations
-K = [1.0, 0.3, 0.5]
+b = [1.0, 0.3, 0.5]
 
-model.verbose = True
+model.verbose = False  # set to True to show optimization progress
 
 # Fit the model
-model.fit(K)
+model.fit(b)
 
 # Output the distribution
-print("\nFitted model parameters are:\n" + str(model.params))
-print("\nFitted distribution is:")
+print()
+print("Fitted model parameters are:\n" + str(model.params))
+print()
+print("Fitted distribution is:")
 p = model.probdist()
 for j in range(len(model.samplespace)):
     x = model.samplespace[j]
-    print("\tx = %-15s" %(x + ":",) + " p(x) = "+str(p[j]))
-
+    print(f"    x = {x + ':':15s} p(x) = {p[j]:.3f}")
 
 # Now show how well the constraints are satisfied:
 print()
 print("Desired constraints:")
-print("\tp['dans'] + p['en'] = 0.3")
-print("\tp['dans'] + p['" + a_grave + "']  = 0.5")
+print("    sum(p(x))           = 1.0")
+print("    p['dans'] + p['en'] = 0.3")
+print("    p['dans'] + p['à']  = 0.5")
 print()
 print("Actual expectations under the fitted model:")
-print("\tp['dans'] + p['en'] =", p[0] + p[1])
-print("\tp['dans'] + p['" + a_grave + "']  = " + str(p[0]+p[2]))
+print(f"    sum(p(x))           = {p.sum():.3f}")
+print(f"    p['dans'] + p['en'] = {p[0] + p[1]:.3f}")
+print(f"    p['dans'] + p['à']  = {p[0] + p[2]:.3f}")

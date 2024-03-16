@@ -19,24 +19,35 @@
 import scipy.sparse as sparse
 import scipy_maxentropy as maxentropy
 
-samplespace = ['dans', 'en', 'à', 'au cours de', 'pendant']
+samplespace = ["dans", "en", "à", "au cours de", "pendant"]
 # Occurrences of French words, and their 'next English word' contexts, in
 # a hypothetical parallel corpus:
-corpus = [('dans', 'a'), ('dans', 'a'), ('dans', 'a'), ('dans', 'the'), \
-          ('pendant', 'a'), ('dans', 'happy'), ('au cours de', 'healthy')]
+corpus = [
+    ("dans", "a"),
+    ("dans", "a"),
+    ("dans", "a"),
+    ("dans", "the"),
+    ("pendant", "a"),
+    ("dans", "happy"),
+    ("au cours de", "healthy"),
+]
 contexts = list(set([c for (x, c) in corpus]))
+
 
 def f0(x, c):
     return x in samplespace
 
+
 def f1(x, c):
-    if x == 'dans' and c in ['a', 'the']:
+    if x == "dans" and c in ["a", "the"]:
         return True
     else:
         return False
 
+
 def f2(x, c):
-    return (x=='dans' or x=='à') and c not in ['a', 'the']
+    return (x == "dans" or x == "à") and c not in ["a", "the"]
+
 
 f = [f0, f1, f2]
 
@@ -67,8 +78,8 @@ for i, f_i in enumerate(f):
 # training data.
 # (The maxentropy module infers the empirical pmf etc. from the counts N)
 
-N = sparse.lil_matrix((1, numcontexts * len(samplespace)))   # initialized to zero
-for (x, c) in corpus:
+N = sparse.lil_matrix((1, numcontexts * len(samplespace)))  # initialized to zero
+for x, c in corpus:
     N[0, context_index[c] * numsamplepoints + samplespace_index[x]] += 1
 
 # Ideally, this could be stored as a sparse matrix of size C x X, whose ith row
@@ -98,17 +109,17 @@ print("\nFitted model parameters are:\n" + str(model.params))
 p = model.probdist()
 
 print("\npmf table p(x | c), where c is the context 'the':")
-c = contexts.index('the')
-print(p[c*numsamplepoints:(c+1)*numsamplepoints])
+c = contexts.index("the")
+print(p[c * numsamplepoints : (c + 1) * numsamplepoints])
 
 print("\nFitted distribution is:")
-print("%12s" % ("c \ x"), end=' ')
+print("%12s" % ("c \ x"), end=" ")
 for label in samplespace:
-    print("%12s" % label, end=' ')
+    print("%12s" % label, end=" ")
 
 for c, context in enumerate(contexts):
-    print("\n%12s" % context, end=' ')
+    print("\n%12s" % context, end=" ")
     for x, label in enumerate(samplespace):
-        print(("%12.3f" % p[c*numsamplepoints+x]), end=' ')
+        print(("%12.3f" % p[c * numsamplepoints + x]), end=" ")
 
 print()
