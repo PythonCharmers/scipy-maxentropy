@@ -8,7 +8,7 @@ from numpy import arange, log, exp, ones, isclose
 from scipy_maxentropy import logsumexp
 
 
-def test_logsumexp(self):
+def test_logsumexp():
     """Test whether logsumexp() function correctly handles large
     inputs.
     """
