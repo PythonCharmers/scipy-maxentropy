@@ -2,16 +2,15 @@
 Utility routines for the maximum entropy module.
 
 Most of them are either Python replacements for the corresponding Fortran
-routines or wrappers around matrices to allow the maxent module to
-manipulate ndarrays, scipy sparse matrices, and PySparse matrices a
-common interface.
+routines or wrappers around matrices to allow the maxentropy package to
+manipulate ndarrays, scipy sparse matrices, and PySparse matrices with a common
+interface.
 
-Perhaps the logsumexp() function belongs under the utils/ branch where other
-modules can access it more easily.
+The logsumexp() function was moved from here into scipy.misc and then
+scipy.special.
 
 Copyright: Ed Schofield, 2024
 License: BSD-style (see LICENSE.md)
-
 """
 
 __author__ = "Ed Schofield"
@@ -20,17 +19,19 @@ import random
 import math
 import cmath
 import numpy as np
-from numpy import log, exp, asarray, ndarray, empty
+from numpy import empty
 from scipy import sparse
-from scipy.special import logsumexp
 
 
 __all__ = [
     "feature_sampler",
     "dictsample",
     "dictsampler",
-    "auxiliary_sampler_scipy",
-    "evaluate_feature_matrix",
+    "feature_sampler",
+    "densefeatures",
+    "densefeaturematrix",
+    "sparsefeatures",
+    "sparsefeaturematrix",
     "innerprod",
     "innerprodtranspose",
     "DivergenceError",
@@ -218,7 +219,7 @@ def robustlog(x):
     """
     if x == 0.0:
         return float("-inf")
-    elif type(x) is complex or (type(x) is float and x < 0):
+    elif isinstance(x, complex) or (isinstance(x, float) and x < 0):
         return cmath.log(x)
     else:
         return math.log(x)

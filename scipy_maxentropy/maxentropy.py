@@ -14,7 +14,9 @@ __author__ = "Ed Schofield"
 __version__ = "1.0"
 
 
-import math, types, pickle
+import math
+import types
+import pickle
 import numpy as np
 from numpy import exp, asarray
 from scipy import optimize
@@ -327,7 +329,7 @@ class BaseModel:
         # This adds the penalty term \sum_{i=1}^m \params_i^2 / {2 \sigma_i^2}.
         # Define 0 / 0 = 0 here; this allows a variance term of
         # sigma_i^2==0 to indicate that feature i should be ignored.
-        if self.sigma2 is not None and ignorepenalty == False:
+        if self.sigma2 is not None and not ignorepenalty:
             ratios = np.nan_to_num(self.params**2 / self.sigma2)
             # Why does the above convert inf to 1.79769e+308?
 
@@ -423,7 +425,7 @@ class BaseModel:
         # partial derivative of the penalty term is \params_i /
         # \sigma_i^2.  Define 0 / 0 = 0 here; this allows a variance term
         # of sigma_i^2==0 to indicate that feature i should be ignored.
-        if self.sigma2 is not None and ignorepenalty == False:
+        if self.sigma2 is not None and not ignorepenalty:
             penalty = self.params / self.sigma2
             G += penalty
             features_to_kill = np.where(np.isnan(penalty))[0]
@@ -980,7 +982,7 @@ class ConditionalModel(Model):
 
         # Use a Gaussian prior for smoothing if requested.
         # This adds the penalty term \sum_{i=1}^m \theta_i^2 / {2 \sigma_i^2}
-        if self.sigma2 is not None and ignorepenalty == False:
+        if self.sigma2 is not None and not ignorepenalty:
             penalty = 0.5 * (self.params**2 / self.sigma2).sum()
             L += penalty
             if self.verbose and self.external is None:
@@ -1362,7 +1364,7 @@ class BigModel(BaseModel):
             #     -log(n-1) + logsumexp(2*log|Z_k - meanZ|)
 
             self.logZapprox = logsumexp(logZs) - math.log(ttrials)
-            stdevlogZ = np.array(logZs).std()
+            # stdevlogZ = np.array(logZs).std()
             mus = np.array(mus)
             self.varE = columnvariances(mus)
             self.mu = columnmeans(mus)
@@ -1429,7 +1431,7 @@ class BigModel(BaseModel):
         """
 
         # if not sequential:
-        assert type(sampler) is types.GeneratorType
+        assert isinstance(sampler, types.GeneratorType)
         self.sampleFgen = sampler
         self.staticsample = staticsample
         if staticsample:
@@ -1505,7 +1507,7 @@ class BigModel(BaseModel):
         try:
             k = self.paramslogcounter
             # k = (self.paramslog-1)*self.paramslogfreq
-        except:
+        except AttributeError:
             k = 0
 
         try:
